@@ -1,19 +1,26 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
+
+import './Card.css';
 
 interface CardProps {
-    children: ReactNode;
-    className?: string;
+  children: ReactNode;
+  className?: string;
+  onClick?: () => void;
 }
 
 const Card = ({
-    children,
-    className = "",
+  children,
+  className = '',
+  onClick,
 }: CardProps) => {
-    return (
-        <div className={`ui-card ${className}`}>
-            {children}
-        </div>
-    );
+  return (
+    <div
+      className={`card ${className}`.trim()}
+      onClick={onClick}
+    >
+      {children}
+    </div>
+  );
 };
 
 export default Card;

@@ -1,0 +1,140 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  border: 1px solid transparent;
+  border-radius: 8px;
+
+  font-family: var(--font-sans);
+  font-weight: 500;
+
+  white-space: nowrap;
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+
+  outline: none;
+}
+
+.button:focus-visible {
+  box-shadow:
+    0 0 0 3px var(--accent-bg);
+}
+
+/* =========================================
+   SIZES
+========================================= */
+
+.button-small {
+  min-height: 32px;
+
+  padding: 6px 11px;
+
+  font-size: 0.8rem;
+}
+
+.button-medium {
+  min-height: 38px;
+
+  padding: 8px 14px;
+
+  font-size: 0.875rem;
+}
+
+.button-large {
+  min-height: 44px;
+
+  padding: 10px 18px;
+
+  font-size: 0.95rem;
+}
+
+/* =========================================
+   PRIMARY
+========================================= */
+
+.button-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+
+  color: #ffffff;
+}
+
+.button-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.button-primary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* =========================================
+   SECONDARY
+========================================= */
+
+.button-secondary {
+  background: var(--surface-secondary);
+  border-color: var(--border);
+
+  color: var(--text-h);
+}
+
+.button-secondary:hover:not(:disabled) {
+  background: var(--border);
+  border-color: var(--border-hover);
+}
+
+/* =========================================
+   GHOST
+========================================= */
+
+.button-ghost {
+  background: transparent;
+  border-color: transparent;
+
+  color: var(--text);
+}
+
+.button-ghost:hover:not(:disabled) {
+  background: var(--surface-secondary);
+
+  color: var(--text-h);
+}
+
+/* =========================================
+   DANGER
+========================================= */
+
+.button-danger {
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+
+  color: var(--danger);
+}
+
+.button-danger:hover:not(:disabled) {
+  background: var(--danger);
+  border-color: var(--danger);
+
+  color: #ffffff;
+}
+
+/* =========================================
+   DISABLED
+========================================= */
+
+.button:disabled {
+  opacity: 0.5;
+
+  cursor: not-allowed;
+  transform: none;
+}

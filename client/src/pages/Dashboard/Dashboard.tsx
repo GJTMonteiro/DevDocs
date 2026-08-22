@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-
 import { Link } from 'react-router-dom';
 
 import {
@@ -27,7 +26,6 @@ import './Dashboard.css';
 
 const Dashboard = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
-
   const [stats, setStats] = useState<DocumentStats | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -68,7 +66,6 @@ const Dashboard = () => {
 
   const formatUpdatedDate = (date: string) => {
     const updatedAt = new Date(date);
-
     const now = new Date();
 
     const difference = now.getTime() - updatedAt.getTime();
@@ -253,7 +250,6 @@ const Dashboard = () => {
 
                       <span>
                         <FiClock size={12} />
-
                         {formatUpdatedDate(document.updatedAt)}
                       </span>
                     </div>

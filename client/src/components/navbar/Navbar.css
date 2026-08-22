@@ -1,108 +1,187 @@
 .navbar {
-  height: 72px;
-  width: calc(100% - 260px);
   position: fixed;
+
   top: 0;
   right: 0;
 
+  left: 260px;
+
+  height: 72px;
+
   display: flex;
+
   align-items: center;
   justify-content: space-between;
 
   padding: 0 28px;
 
-  background: #0f172a;
-  border-bottom: 1px solid #1e293b;
+  background: var(--surface);
 
-  z-index: 100;
+  border-bottom: 1px solid var(--border);
+
+  color: var(--text);
+
+  z-index: 900;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
+
+/* =========================================
+   LEFT
+========================================= */
 
 .navbar-left {
   display: flex;
+
   align-items: center;
+
+  min-width: 0;
 }
 
 .navbar-search {
-  width: 320px;
-  height: 40px;
-
   display: flex;
+
   align-items: center;
+
   gap: 10px;
 
-  padding: 0 12px;
+  width: 360px;
 
-  background: #111827;
-  border: 1px solid #1e293b;
+  min-height: 38px;
+
+  padding: 8px 11px;
+
+  border: 1px solid var(--border);
+
   border-radius: 8px;
 
-  color: #64748b;
+  background: var(--surface-secondary);
+
+  color: var(--text);
+
+  font-size: 13px;
 
   cursor: pointer;
 
   transition:
+    background-color 0.2s ease,
     border-color 0.2s ease,
-    background 0.2s ease;
+    color 0.2s ease;
 }
 
-.navbar-search:hover {
-  background: #162033;
-  border-color: #334155;
+.navbar-search svg {
+  flex-shrink: 0;
+
+  color: var(--text-muted);
+
+  transition: color 0.2s ease;
 }
 
 .navbar-search span {
   flex: 1;
+
   text-align: left;
 
-  font-size: 13px;
+  overflow: hidden;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
 }
+
+.navbar-search:hover {
+  background: var(--surface);
+
+  border-color: var(--border-hover);
+
+  color: var(--text-h);
+}
+
+.navbar-search:hover svg {
+  color: var(--text);
+}
+
+/* =========================================
+   KEYBOARD SHORTCUT
+========================================= */
 
 .navbar-search kbd {
+  flex-shrink: 0;
+
   padding: 3px 6px;
 
-  background: #1e293b;
-  border: 1px solid #334155;
+  border: 1px solid var(--border);
+
   border-radius: 5px;
 
-  color: #94a3b8;
+  background: var(--surface);
 
-  font-size: 11px;
-  font-family: inherit;
+  color: var(--text-muted);
+
+  font-family: var(--mono);
+
+  font-size: 10px;
+
+  line-height: 1;
 }
+
+/* =========================================
+   RIGHT
+========================================= */
 
 .navbar-right {
   display: flex;
+
   align-items: center;
-  gap: 16px;
+
+  gap: 14px;
 }
+
+/* =========================================
+   ICON BUTTON
+========================================= */
 
 .navbar-icon-button {
   position: relative;
 
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
 
   display: flex;
+
   align-items: center;
   justify-content: center;
 
-  background: transparent;
-  border: none;
+  border: 1px solid transparent;
+
   border-radius: 8px;
 
-  color: #94a3b8;
+  background: transparent;
+
+  color: var(--text);
 
   cursor: pointer;
 
   transition:
-    background 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
     color 0.2s ease;
 }
 
 .navbar-icon-button:hover {
-  background: #1e293b;
-  color: #f8fafc;
+  background: var(--surface-secondary);
+
+  border-color: var(--border);
+
+  color: var(--text-h);
 }
+
+/* =========================================
+   NOTIFICATION
+========================================= */
 
 .notification-dot {
   position: absolute;
@@ -113,90 +192,169 @@
   width: 6px;
   height: 6px;
 
-  background: #3b82f6;
   border-radius: 50%;
+
+  background: var(--accent);
+
+  border: 1px solid var(--surface);
 }
+
+/* =========================================
+   DIVIDER
+========================================= */
 
 .navbar-divider {
   width: 1px;
-  height: 30px;
+  height: 28px;
 
-  background: #1e293b;
+  background: var(--border);
 }
+
+/* =========================================
+   USER
+========================================= */
 
 .navbar-user {
   display: flex;
+
   align-items: center;
+
   gap: 10px;
 
-  padding: 4px;
+  padding: 4px 6px;
+
+  border: 1px solid transparent;
+
+  border-radius: 9px;
 
   background: transparent;
-  border: none;
+
+  color: var(--text);
 
   cursor: pointer;
+
+  text-align: left;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
 }
 
+.navbar-user:hover {
+  background: var(--surface-secondary);
+
+  border-color: var(--border);
+}
+
+/* =========================================
+   AVATAR
+========================================= */
+
 .navbar-avatar {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
 
   display: flex;
+
   align-items: center;
   justify-content: center;
 
+  flex-shrink: 0;
+
   border-radius: 50%;
 
-  background: #2563eb;
+  background: var(--accent);
+
   color: #ffffff;
 
-  font-size: 12px;
+  font-size: 11px;
+
   font-weight: 700;
+
+  letter-spacing: 0.02em;
 }
+
+/* =========================================
+   USER INFORMATION
+========================================= */
 
 .navbar-user-info {
   display: flex;
+
   flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
+
+  min-width: 0;
 }
 
 .navbar-user-name {
-  color: #f8fafc;
+  color: var(--text-h);
 
-  font-size: 13px;
+  font-size: 12px;
+
+  line-height: 1.35;
+
   font-weight: 600;
+
+  white-space: nowrap;
 }
 
 .navbar-user-role {
-  color: #64748b;
+  margin-top: 2px;
 
-  font-size: 11px;
+  color: var(--text-muted);
+
+  font-size: 10px;
+
+  line-height: 1.3;
 }
+
+/* =========================================
+   RESPONSIVE
+========================================= */
 
 @media (max-width: 768px) {
   .navbar {
-    width: 100%;
+    left: 72px;
+
+    padding: 0 20px;
+  }
+
+  .navbar-search {
+    width: 280px;
+  }
+}
+
+@media (max-width: 600px) {
+  .navbar {
+    left: 0;
+
     padding: 0 16px;
   }
 
   .navbar-search {
-    width: 200px;
-  }
+    width: auto;
 
-  .navbar-user-info {
-    display: none;
-  }
-}
+    max-width: 42px;
 
-@media (max-width: 500px) {
-  .navbar-search {
-    width: 42px;
-    justify-content: center;
+    padding: 8px 11px;
   }
 
   .navbar-search span,
-  .navbar-search kbd {
+  .navbar-search kbd,
+  .navbar-user-info {
     display: none;
+  }
+
+  .navbar-right {
+    gap: 8px;
+  }
+
+  .navbar-user {
+    padding: 3px;
+  }
+
+  .navbar-avatar {
+    width: 32px;
+    height: 32px;
   }
 }

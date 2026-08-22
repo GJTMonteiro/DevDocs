@@ -1,19 +1,28 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
+
+import './Badge.css';
 
 interface BadgeProps {
-    children: ReactNode;
-    variant?: "blue" | "green" | "yellow" | "red" | "gray";
+  children: ReactNode;
+  variant?:
+    | 'blue'
+    | 'green'
+    | 'yellow'
+    | 'red'
+    | 'gray';
 }
 
 const Badge = ({
-    children,
-    variant = "gray",
+  children,
+  variant = 'gray',
 }: BadgeProps) => {
-    return (
-        <span className={`ui-badge ui-badge-${variant}`}>
-            {children}
-        </span>
-    );
+  return (
+    <span
+      className={`ui-badge ui-badge-${variant}`}
+    >
+      {children}
+    </span>
+  );
 };
 
 export default Badge;

@@ -27,6 +27,7 @@ const Sidebar = () => {
 
       <nav className="sidebar-navigation">
         {/* Workspace */}
+
         <div className="sidebar-section">
           <span className="sidebar-section-title">Workspace</span>
 
@@ -62,6 +63,7 @@ const Sidebar = () => {
         </div>
 
         {/* Library */}
+
         <div className="sidebar-section">
           <span className="sidebar-section-title">Library</span>
 
@@ -97,6 +99,7 @@ const Sidebar = () => {
         </div>
 
         {/* Explore */}
+
         <div className="sidebar-section">
           <span className="sidebar-section-title">Explore</span>
 
@@ -113,6 +116,7 @@ const Sidebar = () => {
       </nav>
 
       {/* Bottom */}
+
       <div className="sidebar-bottom">
         <NavLink
           to="/ai-assistant"

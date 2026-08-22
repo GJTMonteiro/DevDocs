@@ -1,9 +1,26 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type {
+  ButtonHTMLAttributes,
+  ReactNode,
+} from 'react';
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+import './Button.css';
+
+type ButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'ghost'
+  | 'danger';
+
+type ButtonSize =
+  | 'small'
+  | 'medium'
+  | 'large';
+
+interface ButtonProps
+  extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
-  size?: 'small' | 'medium' | 'large';
+  variant?: ButtonVariant;
+  size?: ButtonSize;
 }
 
 const Button = ({
@@ -11,12 +28,15 @@ const Button = ({
   variant = 'primary',
   size = 'medium',
   className = '',
+  type = 'button',
   ...props
 }: ButtonProps) => {
   return (
     <button
-      className={`ui-button ui-button-${variant} ui-button-${size} ${className}`}
-      {...props}>
+      type={type}
+      className={`button button-${variant} button-${size} ${className}`.trim()}
+      {...props}
+    >
       {children}
     </button>
   );
