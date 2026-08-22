@@ -1,36 +1,48 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Navigate, Route, Routes } from 'react-router-dom';
 
-import Dashboard from "../pages/Dashboard/Dashboard";
-import Documentation from "../pages/Documentation/Documentation";
-import Document from "../pages/Document/Document";
-import CreateDocument from "../pages/CreateDocument/CreateDocument";
-import Search from "../pages/Search/Search";
-import Settings from "../pages/Settings/Settings";
+import MainLayout from '../layouts/MainLayout';
+
+import Dashboard from '../pages/Dashboard/Dashboard';
+import Documentation from '../pages/Documentation/Documentation';
+import CreateDocument from '../pages/CreateDocument/CreateDocument';
+import Search from '../pages/Search/Search';
+import Favorites from '../pages/Favorites/Favorites';
+import Collections from '../pages/Collections/Collections';
+import Discover from '../pages/Discover/Discover';
+import AIAssistant from '../pages/AIAssistant/AIAssistant';
+import Settings from '../pages/Settings/Settings';
 
 const AppRoutes = () => {
-    return (
-        <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+  return (
+    <Routes>
+      <Route element={<MainLayout />}>
+        {/* Default */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-            <Route path="/dashboard" element={<Dashboard />} />
+        {/* Main */}
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/documentation" element={<Documentation />} />
+        <Route path="/documentation/create" element={<CreateDocument />} />
+        <Route path="/search" element={<Search />} />
 
-            <Route path="/documentation" element={<Documentation />} />
+        {/* Library */}
+        <Route path="/favorites" element={<Favorites />} />
+        <Route path="/collections" element={<Collections />} />
 
-            <Route
-                path="/documentation/:id"
-                element={<Document />}
-            />
+        {/* Explore */}
+        <Route path="/discover" element={<Discover />} />
 
-            <Route
-                path="/documentation/create"
-                element={<CreateDocument />}
-            />
+        {/* AI */}
+        <Route path="/ai-assistant" element={<AIAssistant />} />
 
-            <Route path="/search" element={<Search />} />
+        {/* Settings */}
+        <Route path="/settings" element={<Settings />} />
 
-            <Route path="/settings" element={<Settings />} />
-        </Routes>
-    );
+        {/* 404 */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Route>
+    </Routes>
+  );
 };
 
 export default AppRoutes;

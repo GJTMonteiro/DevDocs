@@ -1,0 +1,404 @@
+.settings {
+  width: 100%;
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.settings-header {
+  margin-bottom: 40px;
+}
+
+.settings-eyebrow {
+  margin-bottom: 8px;
+  color: #3b82f6;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.settings-header h1 {
+  color: #f8fafc;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.settings-description {
+  margin-top: 8px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* =========================================
+   SECTIONS
+========================================= */
+
+.settings-section {
+  margin-bottom: 36px;
+}
+
+.settings-section-header {
+  margin-bottom: 12px;
+}
+
+.settings-section-header h2 {
+  color: #f8fafc;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.settings-section-header p {
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* =========================================
+   CARD
+========================================= */
+
+.settings-card {
+  overflow: hidden;
+}
+
+/* =========================================
+   PROFILE
+========================================= */
+
+.settings-profile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px;
+}
+
+.settings-avatar {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #2563eb;
+  border-radius: 50%;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.settings-profile-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.settings-profile-info h3 {
+  color: #f8fafc;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.settings-profile-info p {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.settings-profile-info span {
+  color: #3b82f6;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* =========================================
+   DIVIDER
+========================================= */
+
+.settings-divider {
+  width: 100%;
+  height: 1px;
+  background: #1e293b;
+}
+
+/* =========================================
+   SETTINGS ROW
+========================================= */
+
+.settings-row {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  transition: background 0.2s ease;
+}
+
+.settings-row:hover {
+  background: #172033;
+}
+
+.settings-row + .settings-row {
+  border-top: 1px solid #1e293b;
+}
+
+.settings-row-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 8px;
+}
+
+.settings-row-icon.blue {
+  background: #172554;
+  color: #60a5fa;
+}
+
+.settings-row-icon.purple {
+  background: #2e1065;
+  color: #c084fc;
+}
+
+.settings-row-icon.yellow {
+  background: #422006;
+  color: #facc15;
+}
+
+.settings-row-icon.gray {
+  background: #1e293b;
+  color: #94a3b8;
+}
+
+.settings-row-icon.red {
+  background: #450a0a;
+  color: #f87171;
+}
+
+.settings-row-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.settings-row-content strong {
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.settings-row-content span {
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.settings-row-arrow {
+  flex-shrink: 0;
+  color: #475569;
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.settings-row:hover .settings-row-arrow {
+  color: #94a3b8;
+  transform: translateX(2px);
+}
+
+/* =========================================
+   SELECT
+========================================= */
+
+.settings-select {
+  min-width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.settings-select svg {
+  color: #475569;
+}
+
+/* =========================================
+   TOGGLE
+========================================= */
+
+.settings-toggle {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.settings-toggle input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+}
+
+.settings-toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: #334155;
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+
+.settings-toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: 3px;
+  top: 3px;
+  background: #f8fafc;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+
+.settings-toggle input:checked + .settings-toggle-slider {
+  background: #2563eb;
+}
+
+.settings-toggle input:checked + .settings-toggle-slider::before {
+  transform: translateX(18px);
+}
+
+/* =========================================
+   DANGER ZONE
+========================================= */
+
+.settings-danger-section {
+  margin-top: 12px;
+}
+
+.settings-danger-section .settings-section-header h2 {
+  color: #fca5a5;
+}
+
+.settings-danger-card {
+  border-color: #450a0a;
+}
+
+.settings-danger-card .settings-row:hover {
+  background: #1f1115;
+}
+
+/* =========================================
+   ACTIONS
+========================================= */
+
+.settings-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+  padding-bottom: 20px;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 768px) {
+  .settings-header {
+    margin-bottom: 30px;
+  }
+
+  .settings-header h1 {
+    font-size: 24px;
+  }
+
+  .settings-profile {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .settings-profile .ui-button {
+    width: 100%;
+    margin-top: 6px;
+  }
+
+  .settings-row {
+    padding: 15px 16px;
+  }
+
+  .settings-row-content span {
+    max-width: 90%;
+  }
+}
+
+@media (max-width: 500px) {
+  .settings-header h1 {
+    font-size: 22px;
+  }
+
+  .settings-description {
+    font-size: 12px;
+  }
+
+  .settings-section {
+    margin-bottom: 28px;
+  }
+
+  .settings-profile {
+    padding: 16px;
+  }
+
+  .settings-avatar {
+    width: 46px;
+    height: 46px;
+  }
+
+  .settings-row {
+    min-height: 68px;
+    gap: 10px;
+    padding: 13px;
+  }
+
+  .settings-row-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .settings-row-content strong {
+    font-size: 12px;
+  }
+
+  .settings-row-content span {
+    font-size: 10px;
+  }
+
+  .settings-select {
+    min-width: auto;
+    font-size: 11px;
+  }
+
+  .settings-select svg:first-child {
+    display: none;
+  }
+
+  .settings-row .ui-button {
+    flex-shrink: 0;
+  }
+
+  .settings-actions {
+    padding-top: 4px;
+  }
+}

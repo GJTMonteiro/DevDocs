@@ -1,0 +1,132 @@
+.ui-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  border: 1px solid transparent;
+  border-radius: 7px;
+
+  font-family: inherit;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.ui-button:hover {
+  transform: translateY(-1px);
+}
+
+.ui-button-small {
+  height: 32px;
+  padding: 0 11px;
+
+  font-size: 12px;
+}
+
+.ui-button-medium {
+  height: 38px;
+  padding: 0 15px;
+
+  font-size: 13px;
+}
+
+.ui-button-large {
+  height: 44px;
+  padding: 0 18px;
+
+  font-size: 14px;
+}
+
+.ui-button-primary {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.ui-button-primary:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.ui-button-secondary {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+.ui-button-secondary:hover {
+  background: #334155;
+}
+
+.ui-button-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: #94a3b8;
+}
+
+.ui-button-ghost:hover {
+  background: #1e293b;
+  color: #f8fafc;
+}
+
+.ui-button-danger {
+  background: #7f1d1d;
+  border-color: #991b1b;
+  color: #fecaca;
+}
+
+.ui-button-danger:hover {
+  background: #991b1b;
+}
+
+.ui-card {
+  background: #111827;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+}
+
+.ui-badge {
+  display: inline-flex;
+  align-items: center;
+
+  min-height: 24px;
+
+  padding: 0 8px;
+
+  border-radius: 5px;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ui-badge-blue {
+  background: #172554;
+  color: #93c5fd;
+}
+
+.ui-badge-green {
+  background: #052e16;
+  color: #86efac;
+}
+
+.ui-badge-yellow {
+  background: #422006;
+  color: #fde68a;
+}
+
+.ui-badge-red {
+  background: #450a0a;
+  color: #fca5a5;
+}
+
+.ui-badge-gray {
+  background: #1e293b;
+  color: #94a3b8;
+}
