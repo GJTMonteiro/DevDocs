@@ -137,10 +137,16 @@ const Settings = () => {
    * =========================================
    */
 
-  const hasChanges = useMemo(
-    () => JSON.stringify(settings) !== JSON.stringify(savedSettings),
-    [settings, savedSettings],
-  );
+  const hasChanges = useMemo(() => {
+    return (
+      settings.language !== savedSettings.language ||
+      settings.emailNotifications !== savedSettings.emailNotifications ||
+      settings.documentationUpdates !== savedSettings.documentationUpdates ||
+      settings.mentions !== savedSettings.mentions ||
+      settings.aiAssistant !== savedSettings.aiAssistant ||
+      settings.contextAwareResponses !== savedSettings.contextAwareResponses
+    );
+  }, [settings, savedSettings]);
 
   /*
    * =========================================
@@ -148,23 +154,95 @@ const Settings = () => {
    * =========================================
    */
 
-  const updateSetting = <K extends keyof SettingsState>(
+  const updateSetting = async <K extends keyof SettingsState>(
     key: K,
     value: SettingsState[K],
   ) => {
+    setError(null);
+    setShowSavedMessage(false);
+
+    /*
+     * =========================================
+     * THEME
+     * =========================================
+     *
+     * Theme changes are applied and persisted
+     * immediately. They do not require the
+     * "Save changes" button.
+     */
+    if (key === 'theme') {
+      const newTheme = value as SettingsState['theme'];
+      const previousTheme = savedSettings.theme;
+
+      setSettings((current) => ({
+        ...current,
+        theme: newTheme,
+      }));
+
+      setTheme(newTheme);
+
+      try {
+        const updated = await updateSettingsApi({
+          theme: newTheme,
+          language: settings.language,
+          emailNotifications: settings.emailNotifications,
+          documentationUpdates: settings.documentationUpdates,
+          mentions: settings.mentions,
+          aiAssistant: settings.aiAssistant,
+          contextAwareResponses: settings.contextAwareResponses,
+        });
+
+        if (updated.theme !== newTheme) {
+          setSettings((current) => ({
+            ...current,
+            theme: updated.theme,
+          }));
+
+          setSavedSettings((current) => ({
+            ...current,
+            theme: updated.theme,
+          }));
+
+          setTheme(updated.theme);
+
+          return;
+        }
+
+        setSavedSettings((current) => ({
+          ...current,
+          theme: newTheme,
+        }));
+      } catch (err) {
+        console.error('Failed to save theme:', err);
+
+        setError('Unable to save your theme preference.');
+
+        /*
+         * Revert the theme if the server request fails.
+         */
+        setSettings((current) => ({
+          ...current,
+          theme: previousTheme,
+        }));
+
+        setTheme(previousTheme);
+      }
+
+      return;
+    }
+
+    /*
+     * =========================================
+     * OTHER SETTINGS
+     * =========================================
+     *
+     * All other settings remain local until
+     * the user clicks "Save changes".
+     */
     setSettings((current) => ({
       ...current,
       [key]: value,
     }));
-
-    /*
-     * Theme changes are applied immediately.
-     * Persistence happens when the user clicks
-     * "Save changes".
-     */
-    if (key === 'theme') {
-      setTheme(value as SettingsState['theme']);
-    }
 
     /*
      * If AI Assistant is disabled,
@@ -178,9 +256,6 @@ const Settings = () => {
         contextAwareResponses: false,
       }));
     }
-
-    setShowSavedMessage(false);
-    setError(null);
   };
 
   /*
@@ -262,12 +337,10 @@ const Settings = () => {
       return;
     }
 
-    setSettings(savedSettings);
-
-    /*
-     * Restore the previously saved theme.
-     */
-    setTheme(savedSettings.theme);
+    setSettings((current) => ({
+      ...savedSettings,
+      theme: current.theme,
+    }));
 
     setShowSavedMessage(false);
     setError(null);

@@ -20,6 +20,8 @@ interface ThemeProviderProps {
   children: ReactNode;
 }
 
+const THEME_STORAGE_KEY = 'devdocs-theme';
+
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 const getSystemTheme = (): 'dark' | 'light' => {
@@ -40,34 +42,100 @@ const applyTheme = (theme: Theme) => {
   const resolvedTheme = resolveTheme(theme);
 
   document.documentElement.dataset.theme = resolvedTheme;
-
   document.documentElement.style.colorScheme = resolvedTheme;
 };
 
+const getStoredTheme = (): Theme | null => {
+  try {
+    const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+
+    if (
+      storedTheme === 'dark' ||
+      storedTheme === 'light' ||
+      storedTheme === 'system'
+    ) {
+      return storedTheme;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Failed to read stored theme:', error);
+    return null;
+  }
+};
+
+const storeTheme = (theme: Theme) => {
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  } catch (error) {
+    console.error('Failed to store theme:', error);
+  }
+};
+
 export const ThemeProvider = ({ children }: ThemeProviderProps) => {
-  const [theme, setTheme] = useState<Theme>('dark');
+  /*
+   * Read the locally persisted theme immediately.
+   *
+   * This prevents the application from always starting
+   * in dark mode after a refresh.
+   */
+  const [theme, setThemeState] = useState<Theme>(() => {
+    return getStoredTheme() ?? 'dark';
+  });
 
   const [isThemeLoading, setIsThemeLoading] = useState(true);
 
   /*
-   * Load the persisted theme once.
+   * Apply the initial theme immediately.
    */
   useEffect(() => {
+    applyTheme(theme);
+  }, []);
+
+  /*
+   * Load the persisted theme from the server.
+   *
+   * The localStorage value is used immediately so the UI
+   * does not have to wait for the API request.
+   *
+   * Once the server responds, its value becomes the
+   * authoritative preference for the account.
+   */
+  useEffect(() => {
+    let isMounted = true;
+
     const loadTheme = async () => {
       try {
         const settings = await getSettings();
 
-        setTheme(settings.theme);
+        if (!isMounted) {
+          return;
+        }
+
+        const serverTheme = settings.theme;
+
+        setThemeState(serverTheme);
+        storeTheme(serverTheme);
+        applyTheme(serverTheme);
       } catch (error) {
         console.error('Failed to load theme:', error);
 
-        setTheme('dark');
+        /*
+         * Keep the locally stored theme if the API
+         * is unavailable.
+         */
       } finally {
-        setIsThemeLoading(false);
+        if (isMounted) {
+          setIsThemeLoading(false);
+        }
       }
     };
 
     loadTheme();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   /*
@@ -75,11 +143,12 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
    */
   useEffect(() => {
     applyTheme(theme);
+    storeTheme(theme);
   }, [theme]);
 
   /*
-   * React to operating system changes
-   * when the user selected "System".
+   * React to operating system changes when
+   * the user has selected "System".
    */
   useEffect(() => {
     if (theme !== 'system') {
@@ -98,6 +167,15 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
       mediaQuery.removeEventListener('change', handleChange);
     };
   }, [theme]);
+
+  /*
+   * Public theme setter.
+   */
+  const setTheme = (newTheme: Theme) => {
+    setThemeState(newTheme);
+    storeTheme(newTheme);
+    applyTheme(newTheme);
+  };
 
   return (
     <ThemeContext.Provider

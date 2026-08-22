@@ -8,6 +8,7 @@ import {
 } from 'drizzle-orm/pg-core';
 
 import { users } from './users.js';
+import { collections } from './collections.js';
 
 export const documentVisibilityEnum = pgEnum('document_visibility', [
   'workspace',
@@ -27,7 +28,9 @@ export const documents = pgTable('documents', {
 
   content: text('content').notNull(),
 
-  collectionId: integer('collection_id'),
+  collectionId: integer('collection_id').references(() => collections.id, {
+    onDelete: 'set null',
+  }),
 
   category: text('category'),
 

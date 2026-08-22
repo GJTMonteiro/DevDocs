@@ -8,6 +8,13 @@
       "when": 1787430348204,
       "tag": "0000_solid_gabe_jones",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1787440009553,
+      "tag": "0001_long_hellcat",
+      "breakpoints": true
     }
   ]
 }
