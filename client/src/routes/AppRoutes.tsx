@@ -3,13 +3,25 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
 
 import Dashboard from '../pages/Dashboard/Dashboard';
+
 import Documentation from '../pages/Documentation/Documentation';
+
 import CreateDocument from '../pages/CreateDocument/CreateDocument';
+
+import Document from '../pages/Documentation/Documentation';
+
+import EditDocument from '../pages/EditDocument/EditDocument';
+
 import Search from '../pages/Search/Search';
+
 import Favorites from '../pages/Favorites/Favorites';
+
 import Collections from '../pages/Collections/Collections';
+
 import Discover from '../pages/Discover/Discover';
+
 import AIAssistant from '../pages/AIAssistant/AIAssistant';
+
 import Settings from '../pages/Settings/Settings';
 
 const AppRoutes = () => {
@@ -21,12 +33,20 @@ const AppRoutes = () => {
 
         {/* Main */}
         <Route path="/dashboard" element={<Dashboard />} />
+
         <Route path="/documentation" element={<Documentation />} />
+
         <Route path="/documentation/create" element={<CreateDocument />} />
+
+        <Route path="/documentation/:id" element={<Document />} />
+
+        <Route path="/documentation/:id/edit" element={<EditDocument />} />
+
         <Route path="/search" element={<Search />} />
 
         {/* Library */}
         <Route path="/favorites" element={<Favorites />} />
+
         <Route path="/collections" element={<Collections />} />
 
         {/* Explore */}

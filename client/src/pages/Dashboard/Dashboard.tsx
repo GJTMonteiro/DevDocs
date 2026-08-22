@@ -1,4 +1,7 @@
+import { useEffect, useState } from 'react';
+
 import { Link } from 'react-router-dom';
+
 import {
   FiArrowRight,
   FiBookOpen,
@@ -7,68 +10,127 @@ import {
   FiFileText,
   FiFolder,
   FiPlus,
-  FiTrendingUp,
 } from 'react-icons/fi';
 
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 
+import {
+  getDocumentStats,
+  getDocuments,
+  type Document,
+  type DocumentStats,
+} from '../../services/documents';
+
 import './Dashboard.css';
 
-interface RecentDocument {
-  id: number;
-  title: string;
-  description: string;
-  category: string;
-  updated: string;
-  status: 'Published' | 'Draft';
-}
-
-const recentDocuments: RecentDocument[] = [
-  {
-    id: 1,
-    title: 'Authentication Guide',
-    description: 'How authentication and authorization work in our platform.',
-    category: 'Backend',
-    updated: '10 minutes ago',
-    status: 'Published',
-  },
-  {
-    id: 2,
-    title: 'API Architecture',
-    description: 'Overview of our REST API architecture and conventions.',
-    category: 'Architecture',
-    updated: '1 hour ago',
-    status: 'Published',
-  },
-  {
-    id: 3,
-    title: 'React Components',
-    description: 'Internal guidelines for building reusable React components.',
-    category: 'Frontend',
-    updated: '3 hours ago',
-    status: 'Published',
-  },
-  {
-    id: 4,
-    title: 'Database Guidelines',
-    description: 'Database structure, naming conventions and best practices.',
-    category: 'Database',
-    updated: 'Yesterday',
-    status: 'Draft',
-  },
-];
-
 const Dashboard = () => {
+  const [documents, setDocuments] = useState<Document[]>([]);
+
+  const [stats, setStats] = useState<DocumentStats | null>(null);
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        setIsLoading(true);
+        setError('');
+
+        const [documentsData, statsData] = await Promise.all([
+          getDocuments(),
+          getDocumentStats(),
+        ]);
+
+        setDocuments(documentsData);
+        setStats(statsData);
+      } catch (error) {
+        setError(
+          error instanceof Error ? error.message : 'Failed to load dashboard.',
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDashboard();
+  }, []);
+
+  const recentDocuments = [...documents]
+    .sort(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+    )
+    .slice(0, 4);
+
+  const formatUpdatedDate = (date: string) => {
+    const updatedAt = new Date(date);
+
+    const now = new Date();
+
+    const difference = now.getTime() - updatedAt.getTime();
+
+    const minutes = Math.floor(difference / (1000 * 60));
+
+    if (minutes < 1) {
+      return 'Just now';
+    }
+
+    if (minutes < 60) {
+      return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+    }
+
+    const hours = Math.floor(minutes / 60);
+
+    if (hours < 24) {
+      return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+    }
+
+    const days = Math.floor(hours / 24);
+
+    if (days === 1) {
+      return 'Yesterday';
+    }
+
+    return `${days} days ago`;
+  };
+
+  const getDescription = (document: Document) => {
+    const content = document.content.trim();
+
+    if (content.length <= 120) {
+      return content;
+    }
+
+    return `${content.slice(0, 120)}...`;
+  };
+
+  const getStatusVariant = (status: Document['status']) => {
+    if (status === 'published') {
+      return 'green' as const;
+    }
+
+    if (status === 'draft') {
+      return 'yellow' as const;
+    }
+
+    return 'blue' as const;
+  };
+
+  const getStatusLabel = (status: Document['status']) => {
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  };
+
   return (
     <div className="dashboard">
-      {/* Header */}
       <section className="dashboard-header">
         <div>
           <p className="dashboard-eyebrow">Workspace</p>
 
-          <h1>Good afternoon, Guilherme.</h1>
+          <h1>Good afternoon.</h1>
 
           <p className="dashboard-description">
             Here's what's happening with your documentation.
@@ -83,7 +145,8 @@ const Dashboard = () => {
         </Link>
       </section>
 
-      {/* Statistics */}
+      {error && <div className="dashboard-error">{error}</div>}
+
       <section className="dashboard-stats">
         <Card className="stat-card">
           <div className="stat-icon blue">
@@ -93,12 +156,9 @@ const Dashboard = () => {
           <div className="stat-content">
             <span>Total documents</span>
 
-            <strong>128</strong>
+            <strong>{isLoading ? '—' : (stats?.total ?? 0)}</strong>
 
-            <small>
-              <FiTrendingUp size={12} />
-              12% this month
-            </small>
+            <small>Documents in your workspace</small>
           </div>
         </Card>
 
@@ -110,9 +170,9 @@ const Dashboard = () => {
           <div className="stat-content">
             <span>Published</span>
 
-            <strong>112</strong>
+            <strong>{isLoading ? '—' : (stats?.published ?? 0)}</strong>
 
-            <small>87.5% of documents</small>
+            <small>Published documents</small>
           </div>
         </Card>
 
@@ -124,9 +184,9 @@ const Dashboard = () => {
           <div className="stat-content">
             <span>Drafts</span>
 
-            <strong>16</strong>
+            <strong>{isLoading ? '—' : (stats?.drafts ?? 0)}</strong>
 
-            <small>Need your attention</small>
+            <small>Documents still in draft</small>
           </div>
         </Card>
 
@@ -138,16 +198,14 @@ const Dashboard = () => {
           <div className="stat-content">
             <span>Collections</span>
 
-            <strong>12</strong>
+            <strong>—</strong>
 
-            <small>Across your workspace</small>
+            <small>Collections are not available yet</small>
           </div>
         </Card>
       </section>
 
-      {/* Main dashboard content */}
       <section className="dashboard-grid">
-        {/* Recent documents */}
         <Card className="dashboard-documents">
           <div className="section-header">
             <div>
@@ -163,50 +221,63 @@ const Dashboard = () => {
           </div>
 
           <div className="document-list">
-            {recentDocuments.map((document) => (
-              <Link
-                to={`/documentation/${document.id}`}
-                className="dashboard-document"
-                key={document.id}>
-                <div className="document-icon">
-                  <FiFileText size={18} />
-                </div>
-
-                <div className="document-info">
-                  <div className="document-title-row">
-                    <h3>{document.title}</h3>
-
-                    <Badge
-                      variant={
-                        document.status === 'Published' ? 'green' : 'yellow'
-                      }>
-                      {document.status}
-                    </Badge>
+            {!isLoading &&
+              recentDocuments.map((document) => (
+                <Link
+                  to={`/documentation/${document.id}`}
+                  className="dashboard-document"
+                  key={document.id}>
+                  <div className="document-icon">
+                    <FiFileText size={18} />
                   </div>
 
-                  <p>{document.description}</p>
+                  <div className="document-info">
+                    <div className="document-title-row">
+                      <h3>{document.title}</h3>
 
-                  <div className="document-meta">
-                    <span>{document.category}</span>
+                      <Badge variant={getStatusVariant(document.status)}>
+                        {getStatusLabel(document.status)}
+                      </Badge>
+                    </div>
 
-                    <span className="meta-separator">•</span>
+                    <p>{getDescription(document)}</p>
 
-                    <span>
-                      <FiClock size={12} />
-                      {document.updated}
-                    </span>
+                    <div className="document-meta">
+                      {document.category && (
+                        <>
+                          <span>{document.category}</span>
+
+                          <span className="meta-separator">•</span>
+                        </>
+                      )}
+
+                      <span>
+                        <FiClock size={12} />
+
+                        {formatUpdatedDate(document.updatedAt)}
+                      </span>
+                    </div>
                   </div>
-                </div>
 
-                <FiArrowRight className="document-arrow" size={16} />
-              </Link>
-            ))}
+                  <FiArrowRight className="document-arrow" size={16} />
+                </Link>
+              ))}
+
+            {!isLoading && recentDocuments.length === 0 && (
+              <div className="dashboard-empty">
+                <FiFileText size={22} />
+
+                <p>No documents yet.</p>
+
+                <Link to="/documentation/create">
+                  Create your first document
+                </Link>
+              </div>
+            )}
           </div>
         </Card>
 
-        {/* Right column */}
         <div className="dashboard-side">
-          {/* Quick actions */}
           <Card className="quick-actions">
             <div className="section-header">
               <div>
@@ -261,7 +332,6 @@ const Dashboard = () => {
             </div>
           </Card>
 
-          {/* Recent activity */}
           <Card className="activity-card">
             <div className="section-header">
               <div>
@@ -271,45 +341,10 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="activity-list">
-              <div className="activity-item">
-                <div className="activity-avatar">GM</div>
+            <div className="dashboard-empty">
+              <FiClock size={22} />
 
-                <div>
-                  <p>
-                    You updated
-                    <strong>Authentication Guide</strong>
-                  </p>
-
-                  <span>10 minutes ago</span>
-                </div>
-              </div>
-
-              <div className="activity-item">
-                <div className="activity-avatar">AS</div>
-
-                <div>
-                  <p>
-                    Alex created
-                    <strong>Deployment Guide</strong>
-                  </p>
-
-                  <span>1 hour ago</span>
-                </div>
-              </div>
-
-              <div className="activity-item">
-                <div className="activity-avatar">JM</div>
-
-                <div>
-                  <p>
-                    João published
-                    <strong>API Architecture</strong>
-                  </p>
-
-                  <span>3 hours ago</span>
-                </div>
-              </div>
+              <p>Activity tracking is not available yet.</p>
             </div>
           </Card>
         </div>
