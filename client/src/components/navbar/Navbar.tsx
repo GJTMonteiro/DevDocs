@@ -1,4 +1,6 @@
-import { FiBell, FiSearch } from 'react-icons/fi';
+import { FiSearch } from 'react-icons/fi';
+
+import NotificationBell from '../notifications/NotificationBell';
 
 import './Navbar.css';
 
@@ -16,15 +18,7 @@ const Navbar = () => {
       </div>
 
       <div className="navbar-right">
-        <button
-          type="button"
-          className="navbar-icon-button"
-          title="Notifications"
-          aria-label="Notifications">
-          <FiBell size={19} />
-
-          <span className="notification-dot" />
-        </button>
+        <NotificationBell />
 
         <div className="navbar-divider" />
 

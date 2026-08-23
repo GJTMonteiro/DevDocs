@@ -4,7 +4,6 @@ import {
   FiBell,
   FiCheck,
   FiChevronRight,
-  FiGlobe,
   FiLock,
   FiMonitor,
   FiSave,
@@ -29,11 +28,13 @@ interface SettingsState {
   name: string;
   email: string;
   role: string;
+
   theme: 'dark' | 'light' | 'system';
-  language: 'English' | 'Portuguese';
+
   emailNotifications: boolean;
   documentationUpdates: boolean;
   mentions: boolean;
+
   aiAssistant: boolean;
   contextAwareResponses: boolean;
 }
@@ -42,11 +43,13 @@ const DEFAULT_SETTINGS: SettingsState = {
   name: 'Guilherme Monteiro',
   email: 'guilherme@example.com',
   role: 'Developer',
+
   theme: 'dark',
-  language: 'English',
+
   emailNotifications: true,
   documentationUpdates: true,
   mentions: true,
+
   aiAssistant: true,
   contextAwareResponses: true,
 };
@@ -60,14 +63,11 @@ const Settings = () => {
     useState<SettingsState>(DEFAULT_SETTINGS);
 
   const [isLoading, setIsLoading] = useState(true);
-
   const [isSaving, setIsSaving] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
 
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
 
@@ -100,17 +100,24 @@ const Settings = () => {
 
         const loadedSettings: SettingsState = {
           ...DEFAULT_SETTINGS,
+
           theme: data.theme,
-          language: data.language,
+
           emailNotifications: data.emailNotifications,
+
           documentationUpdates: data.documentationUpdates,
+
           mentions: data.mentions,
+
           aiAssistant: data.aiAssistant,
+
           contextAwareResponses: data.contextAwareResponses,
         };
 
         setSettings(loadedSettings);
         setSavedSettings(loadedSettings);
+
+        setTheme(loadedSettings.theme);
       } catch (err) {
         console.error('Failed to load settings:', err);
 
@@ -129,7 +136,7 @@ const Settings = () => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [setTheme]);
 
   /*
    * =========================================
@@ -139,7 +146,6 @@ const Settings = () => {
 
   const hasChanges = useMemo(() => {
     return (
-      settings.language !== savedSettings.language ||
       settings.emailNotifications !== savedSettings.emailNotifications ||
       settings.documentationUpdates !== savedSettings.documentationUpdates ||
       settings.mentions !== savedSettings.mentions ||
@@ -162,16 +168,12 @@ const Settings = () => {
     setShowSavedMessage(false);
 
     /*
-     * =========================================
-     * THEME
-     * =========================================
-     *
-     * Theme changes are applied and persisted
-     * immediately. They do not require the
-     * "Save changes" button.
+     * Theme is persisted immediately.
      */
+
     if (key === 'theme') {
       const newTheme = value as SettingsState['theme'];
+
       const previousTheme = savedSettings.theme;
 
       setSettings((current) => ({
@@ -184,42 +186,24 @@ const Settings = () => {
       try {
         const updated = await updateSettingsApi({
           theme: newTheme,
-          language: settings.language,
-          emailNotifications: settings.emailNotifications,
-          documentationUpdates: settings.documentationUpdates,
-          mentions: settings.mentions,
-          aiAssistant: settings.aiAssistant,
-          contextAwareResponses: settings.contextAwareResponses,
         });
 
-        if (updated.theme !== newTheme) {
-          setSettings((current) => ({
-            ...current,
-            theme: updated.theme,
-          }));
-
-          setSavedSettings((current) => ({
-            ...current,
-            theme: updated.theme,
-          }));
-
-          setTheme(updated.theme);
-
-          return;
-        }
+        setSettings((current) => ({
+          ...current,
+          theme: updated.theme,
+        }));
 
         setSavedSettings((current) => ({
           ...current,
-          theme: newTheme,
+          theme: updated.theme,
         }));
+
+        setTheme(updated.theme);
       } catch (err) {
         console.error('Failed to save theme:', err);
 
         setError('Unable to save your theme preference.');
 
-        /*
-         * Revert the theme if the server request fails.
-         */
         setSettings((current) => ({
           ...current,
           theme: previousTheme,
@@ -235,10 +219,8 @@ const Settings = () => {
      * =========================================
      * OTHER SETTINGS
      * =========================================
-     *
-     * All other settings remain local until
-     * the user clicks "Save changes".
      */
+
     setSettings((current) => ({
       ...current,
       [key]: value,
@@ -249,6 +231,7 @@ const Settings = () => {
      * context-aware responses must also
      * be disabled.
      */
+
     if (key === 'aiAssistant' && value === false) {
       setSettings((current) => ({
         ...current,
@@ -276,32 +259,37 @@ const Settings = () => {
 
       const updated = await updateSettingsApi({
         theme: settings.theme,
-        language: settings.language,
+
         emailNotifications: settings.emailNotifications,
+
         documentationUpdates: settings.documentationUpdates,
+
         mentions: settings.mentions,
+
         aiAssistant: settings.aiAssistant,
+
         contextAwareResponses: settings.contextAwareResponses,
       });
 
       const updatedSettings: SettingsState = {
         ...settings,
+
         theme: updated.theme,
-        language: updated.language,
+
         emailNotifications: updated.emailNotifications,
+
         documentationUpdates: updated.documentationUpdates,
+
         mentions: updated.mentions,
+
         aiAssistant: updated.aiAssistant,
+
         contextAwareResponses: updated.contextAwareResponses,
       };
 
       setSettings(updatedSettings);
       setSavedSettings(updatedSettings);
 
-      /*
-       * Make sure the global theme matches
-       * the value returned by the server.
-       */
       setTheme(updated.theme);
 
       setShowSavedMessage(true);
@@ -338,8 +326,16 @@ const Settings = () => {
     }
 
     setSettings((current) => ({
-      ...savedSettings,
-      theme: current.theme,
+      ...current,
+      emailNotifications: savedSettings.emailNotifications,
+
+      documentationUpdates: savedSettings.documentationUpdates,
+
+      mentions: savedSettings.mentions,
+
+      aiAssistant: savedSettings.aiAssistant,
+
+      contextAwareResponses: savedSettings.contextAwareResponses,
     }));
 
     setShowSavedMessage(false);
@@ -369,11 +365,6 @@ const Settings = () => {
       return;
     }
 
-    /*
-     * Profile persistence will be connected
-     * to the users API when authentication
-     * and user management are implemented.
-     */
     setSettings((current) => ({
       ...current,
       name,
@@ -392,20 +383,6 @@ const Settings = () => {
 
   const handleOpenSecurity = () => {
     setIsSecurityModalOpen(true);
-  };
-
-  /*
-   * =========================================
-   * DELETE ACCOUNT
-   * =========================================
-   */
-
-  const handleDeleteAccount = () => {
-    setIsDeleteModalOpen(false);
-
-    window.alert(
-      'Account deletion will be available once authentication and account management are connected to the server.',
-    );
   };
 
   /*
@@ -594,32 +571,6 @@ const Settings = () => {
               <option value="system">System</option>
             </select>
           </div>
-
-          <div className="settings-row">
-            <div className="settings-row-icon blue">
-              <FiGlobe size={18} />
-            </div>
-
-            <div className="settings-row-content">
-              <strong>Language</strong>
-
-              <span>Select the language used throughout DevDocs.</span>
-            </div>
-
-            <select
-              className="settings-native-select"
-              value={settings.language}
-              onChange={(event) =>
-                updateSetting(
-                  'language',
-                  event.target.value as SettingsState['language'],
-                )
-              }>
-              <option value="English">English</option>
-
-              <option value="Portuguese">Português</option>
-            </select>
-          </div>
         </Card>
       </section>
 
@@ -637,6 +588,8 @@ const Settings = () => {
         </div>
 
         <Card className="settings-card">
+          {/* EMAIL NOTIFICATIONS */}
+
           <div className="settings-row">
             <div className="settings-row-icon yellow">
               <FiBell size={18} />
@@ -661,6 +614,8 @@ const Settings = () => {
             </label>
           </div>
 
+          {/* DOCUMENTATION UPDATES */}
+
           <div className="settings-row">
             <div className="settings-row-icon blue">
               <FiBell size={18} />
@@ -684,6 +639,8 @@ const Settings = () => {
               <span className="settings-toggle-slider" />
             </label>
           </div>
+
+          {/* MENTIONS */}
 
           <div className="settings-row">
             <div className="settings-row-icon purple">
@@ -725,6 +682,8 @@ const Settings = () => {
         </div>
 
         <Card className="settings-card">
+          {/* AI ASSISTANT */}
+
           <div className="settings-row">
             <div className="settings-row-icon blue">✦</div>
 
@@ -748,6 +707,8 @@ const Settings = () => {
               <span className="settings-toggle-slider" />
             </label>
           </div>
+
+          {/* CONTEXT AWARE */}
 
           <div className="settings-row">
             <div className="settings-row-icon purple">
@@ -774,41 +735,6 @@ const Settings = () => {
 
               <span className="settings-toggle-slider" />
             </label>
-          </div>
-        </Card>
-      </section>
-
-      {/* =========================================
-          DANGER ZONE
-      ========================================= */}
-
-      <section className="settings-section settings-danger-section">
-        <div className="settings-section-header">
-          <div>
-            <h2>Danger zone</h2>
-
-            <p>Actions in this section can affect your account.</p>
-          </div>
-        </div>
-
-        <Card className="settings-card settings-danger-card">
-          <div className="settings-row">
-            <div className="settings-row-icon red">
-              <FiUser size={18} />
-            </div>
-
-            <div className="settings-row-content">
-              <strong>Delete account</strong>
-
-              <span>Permanently delete your account and associated data.</span>
-            </div>
-
-            <Button
-              variant="danger"
-              size="small"
-              onClick={() => setIsDeleteModalOpen(true)}>
-              Delete account
-            </Button>
           </div>
         </Card>
       </section>
@@ -964,66 +890,6 @@ const Settings = () => {
             <div className="settings-modal-footer">
               <Button onClick={() => setIsSecurityModalOpen(false)}>
                 Close
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* =========================================
-          DELETE ACCOUNT MODAL
-      ========================================= */}
-
-      {isDeleteModalOpen && (
-        <div
-          className="settings-modal-overlay"
-          onClick={() => setIsDeleteModalOpen(false)}>
-          <div
-            className="settings-modal"
-            onClick={(event) => event.stopPropagation()}>
-            <div className="settings-modal-header">
-              <div>
-                <span className="settings-modal-eyebrow danger">
-                  Danger zone
-                </span>
-
-                <h2>Delete account?</h2>
-              </div>
-
-              <button
-                type="button"
-                className="settings-modal-close"
-                onClick={() => setIsDeleteModalOpen(false)}>
-                <FiX size={17} />
-              </button>
-            </div>
-
-            <div className="settings-modal-body">
-              <p className="settings-delete-description">
-                This action will permanently delete your account and associated
-                data.
-              </p>
-
-              <div className="settings-delete-warning">
-                <FiShield size={16} />
-
-                <span>
-                  Account deletion will only become available after
-                  authentication and server-side account management are
-                  connected.
-                </span>
-              </div>
-            </div>
-
-            <div className="settings-modal-footer">
-              <Button
-                variant="ghost"
-                onClick={() => setIsDeleteModalOpen(false)}>
-                Cancel
-              </Button>
-
-              <Button variant="danger" onClick={handleDeleteAccount}>
-                Delete account
               </Button>
             </div>
           </div>

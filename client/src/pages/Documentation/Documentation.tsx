@@ -23,6 +23,7 @@ import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 
 import {
+  deleteAllDocuments,
   deleteDocument,
   getDocuments,
   toggleDocumentFavorite,
@@ -35,13 +36,9 @@ const Documentation = () => {
   const navigate = useNavigate();
 
   const [documents, setDocuments] = useState<Document[]>([]);
-
   const [search, setSearch] = useState('');
-
   const [isLoading, setIsLoading] = useState(true);
-
   const [error, setError] = useState('');
-
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const [processingFavoriteId, setProcessingFavoriteId] = useState<
@@ -51,6 +48,8 @@ const Documentation = () => {
   const [deletingDocumentId, setDeletingDocumentId] = useState<string | null>(
     null,
   );
+
+  const [deletingAllDocuments, setDeletingAllDocuments] = useState(false);
 
   useEffect(() => {
     const loadDocuments = async () => {
@@ -108,11 +107,9 @@ const Documentation = () => {
 
   const formatUpdatedDate = (date: string) => {
     const updatedAt = new Date(date);
-
     const now = new Date();
 
     const difference = now.getTime() - updatedAt.getTime();
-
     const minutes = Math.floor(difference / (1000 * 60));
 
     if (minutes < 1) {
@@ -160,7 +157,6 @@ const Documentation = () => {
   const handleFavorite = async (documentId: string) => {
     try {
       setProcessingFavoriteId(documentId);
-
       setError('');
 
       const isFavorite = await toggleDocumentFavorite(documentId);
@@ -209,7 +205,6 @@ const Documentation = () => {
 
     try {
       setDeletingDocumentId(document.id);
-
       setError('');
 
       await deleteDocument(document.id);
@@ -228,6 +223,38 @@ const Documentation = () => {
     }
   };
 
+  const handleDeleteAllDocuments = async () => {
+    if (documents.length === 0) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Are you sure you want to delete all ${documents.length} documents? This action cannot be undone.`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setDeletingAllDocuments(true);
+      setError('');
+      setOpenMenuId(null);
+
+      await deleteAllDocuments();
+
+      setDocuments([]);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : 'Failed to delete all documents.',
+      );
+    } finally {
+      setDeletingAllDocuments(false);
+    }
+  };
+
   return (
     <div className="documentation">
       <section className="documentation-header">
@@ -242,10 +269,24 @@ const Documentation = () => {
           </p>
         </div>
 
-        <Button onClick={() => navigate('/documentation/create')}>
-          <FiPlus size={16} />
-          Create document
-        </Button>
+        <div className="documentation-header-actions">
+          {documents.length > 0 && (
+            <button
+              type="button"
+              className="delete-all-documents-button"
+              disabled={deletingAllDocuments}
+              onClick={handleDeleteAllDocuments}>
+              <FiTrash2 size={16} />
+
+              {deletingAllDocuments ? 'Deleting...' : 'Delete all'}
+            </button>
+          )}
+
+          <Button onClick={() => navigate('/documentation/create')}>
+            <FiPlus size={16} />
+            Create document
+          </Button>
+        </div>
       </section>
 
       {error && <div className="documentation-error">{error}</div>}
@@ -292,7 +333,6 @@ const Documentation = () => {
               <button type="button" className="category-item active">
                 <div>
                   <FiBookOpen size={17} />
-
                   <span>All documents</span>
                 </div>
 
@@ -306,7 +346,6 @@ const Documentation = () => {
                   className="category-item">
                   <div>
                     <FiFileText size={17} />
-
                     <span>{category.name}</span>
                   </div>
 
@@ -482,7 +521,6 @@ const Documentation = () => {
 
                   <div className="documentation-card-tags">
                     <span>{document.status}</span>
-
                     <span>{document.visibility}</span>
                   </div>
 
@@ -495,7 +533,6 @@ const Documentation = () => {
 
                     <div className="documentation-updated">
                       <FiClock size={12} />
-
                       {formatUpdatedDate(document.updatedAt)}
                     </div>
                   </div>

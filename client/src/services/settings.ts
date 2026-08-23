@@ -3,27 +3,18 @@ const API_URL = 'http://localhost:3000/api';
 export interface UserSettings {
   userId: string;
 
-  theme:
-    | 'dark'
-    | 'light'
-    | 'system';
+  theme: 'dark' | 'light' | 'system';
 
-  language:
-    | 'English'
-    | 'Portuguese';
+  language: 'English' | 'Portuguese';
 
   emailNotifications: boolean;
-
   documentationUpdates: boolean;
-
   mentions: boolean;
 
   aiAssistant: boolean;
-
   contextAwareResponses: boolean;
 
   createdAt: string;
-
   updatedAt: string;
 }
 
@@ -32,62 +23,42 @@ interface SettingsResponse {
   data: UserSettings;
 }
 
-export const getSettings =
-  async (): Promise<UserSettings> => {
-    const response = await fetch(
-      `${API_URL}/settings`,
-    );
+export const getSettings = async (): Promise<UserSettings> => {
+  const response = await fetch(`${API_URL}/settings`);
 
-    if (!response.ok) {
-      throw new Error(
-        'Failed to fetch settings.',
-      );
-    }
+  if (!response.ok) {
+    throw new Error('Failed to fetch settings.');
+  }
 
-    const result: SettingsResponse =
-      await response.json();
+  const result: SettingsResponse = await response.json();
 
-    if (!result.success) {
-      throw new Error(
-        'Failed to fetch settings.',
-      );
-    }
+  if (!result.success) {
+    throw new Error('Failed to fetch settings.');
+  }
 
-    return result.data;
-  };
+  return result.data;
+};
 
-export const updateSettings =
-  async (
-    settings: Partial<UserSettings>,
-  ): Promise<UserSettings> => {
-    const response = await fetch(
-      `${API_URL}/settings`,
-      {
-        method: 'PUT',
+export const updateSettings = async (
+  settings: Partial<UserSettings>,
+): Promise<UserSettings> => {
+  const response = await fetch(`${API_URL}/settings`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(settings),
+  });
 
-        headers: {
-          'Content-Type':
-            'application/json',
-        },
+  if (!response.ok) {
+    throw new Error('Failed to update settings.');
+  }
 
-        body: JSON.stringify(settings),
-      },
-    );
+  const result: SettingsResponse = await response.json();
 
-    if (!response.ok) {
-      throw new Error(
-        'Failed to update settings.',
-      );
-    }
+  if (!result.success) {
+    throw new Error('Failed to update settings.');
+  }
 
-    const result: SettingsResponse =
-      await response.json();
-
-    if (!result.success) {
-      throw new Error(
-        'Failed to update settings.',
-      );
-    }
-
-    return result.data;
-  };
+  return result.data;
+};

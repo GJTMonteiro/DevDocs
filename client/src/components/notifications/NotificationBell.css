@@ -1,0 +1,524 @@
+.notification-bell {
+  position: relative;
+  z-index: 1000;
+}
+
+.notification-bell-button {
+  position: relative;
+  z-index: 1001;
+
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid transparent;
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: var(--text);
+
+  cursor: pointer;
+  pointer-events: auto;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.notification-bell-button:hover {
+  background: var(--surface-secondary);
+
+  border-color: var(--border);
+
+  color: var(--text-h);
+}
+
+.notification-bell-button svg {
+  pointer-events: none;
+}
+
+.notification-bell-badge {
+  position: absolute;
+
+  top: -4px;
+  right: -4px;
+
+  min-width: 17px;
+  height: 17px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 4px;
+
+  border: 2px solid var(--surface);
+
+  border-radius: 999px;
+
+  background: var(--accent);
+
+  color: #ffffff;
+
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+
+  pointer-events: none;
+}
+
+/* =========================================
+   BACKDROP
+========================================= */
+
+.notification-backdrop {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 999;
+
+  border: none;
+
+  background: transparent;
+
+  cursor: default;
+}
+
+/* =========================================
+   PANEL
+========================================= */
+
+.notification-panel {
+  position: absolute;
+
+  top: calc(100% + 10px);
+  right: 0;
+
+  z-index: 1002;
+
+  width: 380px;
+  max-height: 560px;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  border: 1px solid var(--border);
+  border-radius: 12px;
+
+  background: var(--surface);
+
+  color: var(--text);
+
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.18),
+    0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.notification-panel-header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 16px 18px;
+
+  border-bottom: 1px solid var(--border);
+}
+
+.notification-panel-header h2 {
+  margin: 0;
+
+  color: var(--text-h);
+
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.notification-panel-header span {
+  display: block;
+
+  margin-top: 3px;
+
+  color: var(--text-muted);
+
+  font-size: 11px;
+}
+
+.notification-close {
+  width: 30px;
+  height: 30px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid transparent;
+  border-radius: 7px;
+
+  background: transparent;
+
+  color: var(--text-muted);
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.notification-close:hover {
+  background: var(--surface-secondary);
+
+  color: var(--text);
+}
+
+/* =========================================
+   ERROR
+========================================= */
+
+.notification-error {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  margin: 10px 12px 0;
+
+  padding: 9px 10px;
+
+  border: 1px solid var(--border);
+
+  border-radius: 7px;
+
+  background: var(--surface-secondary);
+
+  color: var(--text);
+
+  font-size: 11px;
+}
+
+.notification-error button {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+
+  background: transparent;
+
+  color: var(--text-muted);
+
+  cursor: pointer;
+}
+
+/* =========================================
+   STATES
+========================================= */
+
+.notification-state {
+  min-height: 180px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  padding: 30px;
+
+  color: var(--text-muted);
+
+  text-align: center;
+}
+
+.notification-state strong {
+  color: var(--text-h);
+
+  font-size: 13px;
+}
+
+.notification-state span {
+  font-size: 11px;
+}
+
+/* =========================================
+   LIST
+========================================= */
+
+.notification-list {
+  flex: 1;
+
+  overflow-y: auto;
+}
+
+/* =========================================
+   ITEM
+========================================= */
+
+.notification-item {
+  display: flex;
+
+  gap: 12px;
+
+  padding: 14px 16px;
+
+  border-bottom: 1px solid var(--border);
+
+  cursor: pointer;
+
+  transition: background-color 0.15s ease;
+}
+
+.notification-item:hover {
+  background: var(--surface-secondary);
+}
+
+.notification-item.is-unread {
+  background: var(--surface-secondary);
+}
+
+.notification-item.is-read {
+  opacity: 0.72;
+}
+
+/* =========================================
+   ICON
+========================================= */
+
+.notification-item-icon {
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 8px;
+
+  background: var(--surface-secondary);
+
+  color: var(--accent);
+}
+
+/* =========================================
+   CONTENT
+========================================= */
+
+.notification-item-content {
+  flex: 1;
+
+  min-width: 0;
+}
+
+.notification-item-top {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 8px;
+}
+
+.notification-item-top strong {
+  color: var(--text-h);
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.notification-item-content p {
+  margin: 5px 0;
+
+  color: var(--text-muted);
+
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.notification-date {
+  color: var(--text-muted);
+
+  font-size: 10px;
+}
+
+/* =========================================
+   DELETE SINGLE
+========================================= */
+
+.notification-delete {
+  width: 26px;
+  height: 26px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border: 1px solid transparent;
+  border-radius: 6px;
+
+  background: transparent;
+
+  color: var(--text-muted);
+
+  cursor: pointer;
+
+  opacity: 0;
+
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.notification-item:hover .notification-delete {
+  opacity: 1;
+}
+
+.notification-delete:hover {
+  background: var(--surface);
+
+  color: #dc2626;
+}
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.notification-panel-footer {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  padding: 10px 12px;
+
+  border-top: 1px solid var(--border);
+
+  background: var(--surface);
+}
+
+.notification-panel-footer button {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  padding: 7px 9px;
+
+  border: none;
+
+  border-radius: 6px;
+
+  background: transparent;
+
+  color: var(--text-muted);
+
+  font-size: 10px;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.notification-panel-footer button:hover:not(:disabled) {
+  background: var(--surface-secondary);
+
+  color: var(--text);
+}
+
+.notification-panel-footer button:disabled {
+  opacity: 0.45;
+
+  cursor: not-allowed;
+}
+
+/* =========================================
+   DELETE ALL
+========================================= */
+
+.notification-delete-all {
+  color: #dc2626 !important;
+}
+
+.notification-delete-all:hover:not(:disabled) {
+  background: rgba(220, 38, 38, 0.08) !important;
+
+  color: #b91c1c !important;
+}
+
+.notification-delete-all:disabled {
+  opacity: 0.5;
+
+  cursor: not-allowed;
+}
+
+/* =========================================
+   SCROLLBAR
+========================================= */
+
+.notification-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+
+  background: var(--border);
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 600px) {
+  .notification-panel {
+    position: fixed;
+
+    top: 72px;
+    right: 12px;
+    left: 12px;
+
+    width: auto;
+
+    max-height: calc(100vh - 90px);
+  }
+}

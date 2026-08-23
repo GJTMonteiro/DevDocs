@@ -20,31 +20,20 @@ export interface UpdateDocumentInput {
 
 export interface Document {
   id: string;
-
   title: string;
-
   content: string;
-
   collectionId: number | null;
-
   category: string | null;
-
   visibility: 'workspace' | 'private';
-
   status: 'draft' | 'published' | 'archived';
-
   createdBy: string;
-
   createdAt: string;
-
   updatedAt: string;
-
   author: {
     id: string;
     name: string;
     email: string;
   };
-
   isFavorite: boolean;
 }
 
@@ -81,16 +70,21 @@ interface UpdateDocumentResponse {
   data: Document;
 }
 
+interface DeleteAllDocumentsResponse {
+  success: boolean;
+  data: {
+    deleted: number;
+  };
+}
+
 export const createDocument = async (
   input: CreateDocumentInput,
 ): Promise<Document> => {
   const response = await fetch(`${API_URL}/documents`, {
     method: 'POST',
-
     headers: {
       'Content-Type': 'application/json',
     },
-
     body: JSON.stringify(input),
   });
 
@@ -162,11 +156,9 @@ export const toggleDocumentFavorite = async (
 
   const response = await fetch(`${API_URL}/documents/${documentId}/favorite`, {
     method: 'POST',
-
     headers: {
       'Content-Type': 'application/json',
     },
-
     body: JSON.stringify({
       userId,
     }),
@@ -189,11 +181,9 @@ export const updateDocument = async (
 ): Promise<Document> => {
   const response = await fetch(`${API_URL}/documents/${documentId}`, {
     method: 'PUT',
-
     headers: {
       'Content-Type': 'application/json',
     },
-
     body: JSON.stringify(input),
   });
 
@@ -218,4 +208,24 @@ export const deleteDocument = async (documentId: string): Promise<void> => {
 
     throw new Error(error?.error || 'Failed to delete document.');
   }
+};
+
+/* =========================================
+   DELETE ALL DOCUMENTS
+========================================= */
+
+export const deleteAllDocuments = async (): Promise<number> => {
+  const response = await fetch(`${API_URL}/documents`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => null);
+
+    throw new Error(error?.error || 'Failed to delete all documents.');
+  }
+
+  const result: DeleteAllDocumentsResponse = await response.json();
+
+  return result.data.deleted;
 };
