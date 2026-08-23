@@ -1,12 +1,10 @@
 import { eq } from 'drizzle-orm';
 
 import { db } from '../config/database.js';
-
 import { userPreferences } from '../db/schema/userPreferences.js';
 
 const DEFAULT_USER_PREFERENCES = {
   theme: 'dark' as const,
-  language: 'English' as const,
   emailNotifications: true,
   documentationUpdates: true,
   mentions: true,
@@ -38,17 +36,10 @@ export const getUserSettings = async (userId: string) => {
 
 export interface UpdateUserSettingsInput {
   theme?: 'dark' | 'light' | 'system';
-
-  language?: 'English' | 'Portuguese';
-
   emailNotifications?: boolean;
-
   documentationUpdates?: boolean;
-
   mentions?: boolean;
-
   aiAssistant?: boolean;
-
   contextAwareResponses?: boolean;
 }
 
@@ -60,21 +51,13 @@ export const updateUserSettings = async (
 
   const nextValues = {
     theme: input.theme ?? current.theme,
-
-    language: input.language ?? current.language,
-
     emailNotifications: input.emailNotifications ?? current.emailNotifications,
-
     documentationUpdates:
       input.documentationUpdates ?? current.documentationUpdates,
-
     mentions: input.mentions ?? current.mentions,
-
     aiAssistant: input.aiAssistant ?? current.aiAssistant,
-
     contextAwareResponses:
       input.contextAwareResponses ?? current.contextAwareResponses,
-
     updatedAt: new Date(),
   };
 

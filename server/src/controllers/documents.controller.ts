@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 
 import {
   createDocument,
+  deleteAllDocuments,
   deleteDocument,
   getDocumentById,
   getDocuments,
@@ -206,26 +207,21 @@ export const updateDocumentController = async (req: Request, res: Response) => {
     ...(title !== undefined && {
       title: title.trim(),
     }),
-
     ...(content !== undefined && {
       content,
     }),
-
     ...(collectionId !== undefined && {
       collectionId,
     }),
-
     ...(category !== undefined && {
       category:
         typeof category === 'string' && category.trim()
           ? category.trim()
           : null,
     }),
-
     ...(visibility !== undefined && {
       visibility,
     }),
-
     ...(status !== undefined && {
       status,
     }),
@@ -260,4 +256,20 @@ export const deleteDocumentController = async (req: Request, res: Response) => {
   }
 
   return res.status(204).send();
+};
+
+/* =========================================
+   DELETE ALL DOCUMENTS
+========================================= */
+
+export const deleteAllDocumentsController = async (
+  _req: Request,
+  res: Response,
+) => {
+  const result = await deleteAllDocuments();
+
+  return res.status(200).json({
+    success: true,
+    data: result,
+  });
 };

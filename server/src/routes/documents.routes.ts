@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import {
   createDocumentController,
+  deleteAllDocumentsController,
   deleteDocumentController,
   getDocumentByIdController,
   getDocumentStatsController,
@@ -21,6 +22,12 @@ router.get('/', getDocumentsController);
 router.post('/:id/favorite', toggleDocumentFavoriteController);
 
 router.put('/:id', updateDocumentController);
+
+/*
+ * DELETE ALL DOCUMENTS
+ * Must be before /:id
+ */
+router.delete('/', deleteAllDocumentsController);
 
 router.delete('/:id', deleteDocumentController);
 

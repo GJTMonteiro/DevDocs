@@ -4,8 +4,6 @@ import { users } from './users.js';
 
 export const themeEnum = pgEnum('user_theme', ['dark', 'light', 'system']);
 
-export const languageEnum = pgEnum('user_language', ['English', 'Portuguese']);
-
 export const userPreferences = pgTable('user_preferences', {
   userId: uuid('user_id')
     .primaryKey()
@@ -14,8 +12,6 @@ export const userPreferences = pgTable('user_preferences', {
     }),
 
   theme: themeEnum('theme').notNull().default('dark'),
-
-  language: languageEnum('language').notNull().default('English'),
 
   emailNotifications: boolean('email_notifications').notNull().default(true),
 

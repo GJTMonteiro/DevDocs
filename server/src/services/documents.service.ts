@@ -1,10 +1,10 @@
-import { and, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 
 import { db } from '../config/database.js';
-
 import { documents } from '../db/schema/documents.js';
 import { documentFavorites } from '../db/schema/documentFavorites.js';
 import { users } from '../db/schema/users.js';
+import { createNotification } from './notificationService.js';
 
 interface CreateDocumentInput {
   title: string;
@@ -24,6 +24,10 @@ export interface UpdateDocumentInput {
   status?: 'draft' | 'published' | 'archived';
 }
 
+/* =========================================
+   CREATE DOCUMENT
+========================================= */
+
 export const createDocument = async (input: CreateDocumentInput) => {
   const [document] = await db
     .insert(documents)
@@ -37,8 +41,24 @@ export const createDocument = async (input: CreateDocumentInput) => {
     })
     .returning();
 
+  if (!document) {
+    throw new Error('Failed to create document.');
+  }
+
+  await createNotification({
+    userId: input.createdBy,
+    type: 'document_created',
+    title: 'Document created',
+    message: `Your document "${document.title}" was created successfully.`,
+    documentId: document.id,
+  });
+
   return document;
 };
+
+/* =========================================
+   GET DOCUMENTS
+========================================= */
 
 export const getDocuments = async (userId?: string) => {
   const favoriteJoin = userId
@@ -74,8 +94,12 @@ export const getDocuments = async (userId?: string) => {
     .from(documents)
     .leftJoin(users, eq(documents.createdBy, users.id))
     .leftJoin(documentFavorites, favoriteJoin)
-    .orderBy(documents.createdAt);
+    .orderBy(desc(documents.createdAt));
 };
+
+/* =========================================
+   GET DOCUMENT BY ID
+========================================= */
 
 export const getDocumentById = async (id: string, userId?: string) => {
   const favoriteJoin = userId
@@ -105,8 +129,8 @@ export const getDocumentById = async (id: string, userId?: string) => {
       },
 
       isFavorite: sql<boolean>`
-          ${documentFavorites.documentId} IS NOT NULL
-        `,
+        ${documentFavorites.documentId} IS NOT NULL
+      `,
     })
     .from(documents)
     .leftJoin(users, eq(documents.createdBy, users.id))
@@ -117,48 +141,66 @@ export const getDocumentById = async (id: string, userId?: string) => {
   return document ?? null;
 };
 
+/* =========================================
+   DOCUMENT STATISTICS
+========================================= */
+
 export const getDocumentStats = async () => {
   const [result] = await db
     .select({
       total: sql<number>`
-            count(*)
-          `,
+        count(*)
+      `,
 
       published: sql<number>`
-            count(*) filter (
-              where ${documents.status} = 'published'
-            )
-          `,
+        count(*) filter (
+          where ${documents.status} = 'published'
+        )
+      `,
 
       drafts: sql<number>`
-            count(*) filter (
-              where ${documents.status} = 'draft'
-            )
-          `,
+        count(*) filter (
+          where ${documents.status} = 'draft'
+        )
+      `,
 
       archived: sql<number>`
-            count(*) filter (
-              where ${documents.status} = 'archived'
-            )
-          `,
+        count(*) filter (
+          where ${documents.status} = 'archived'
+        )
+      `,
     })
     .from(documents);
 
   return {
-    total: Number(result.total),
-
-    published: Number(result.published),
-
-    drafts: Number(result.drafts),
-
-    archived: Number(result.archived),
+    total: Number(result?.total ?? 0),
+    published: Number(result?.published ?? 0),
+    drafts: Number(result?.drafts ?? 0),
+    archived: Number(result?.archived ?? 0),
   };
 };
+
+/* =========================================
+   TOGGLE FAVORITE
+========================================= */
 
 export const toggleDocumentFavorite = async (
   documentId: string,
   userId: string,
 ) => {
+  const [document] = await db
+    .select({
+      id: documents.id,
+      title: documents.title,
+    })
+    .from(documents)
+    .where(eq(documents.id, documentId))
+    .limit(1);
+
+  if (!document) {
+    throw new Error('Document not found.');
+  }
+
   const [existingFavorite] = await db
     .select()
     .from(documentFavorites)
@@ -170,6 +212,10 @@ export const toggleDocumentFavorite = async (
     )
     .limit(1);
 
+  /* ===============================
+     REMOVE FROM FAVORITES
+  =============================== */
+
   if (existingFavorite) {
     await db
       .delete(documentFavorites)
@@ -180,20 +226,44 @@ export const toggleDocumentFavorite = async (
         ),
       );
 
+    await createNotification({
+      userId,
+      type: 'document_unfavorited',
+      title: 'Removed from favorites',
+      message: `"${document.title}" was removed from your favorites.`,
+      documentId: document.id,
+    });
+
     return {
       isFavorite: false,
     };
   }
+
+  /* ===============================
+     ADD TO FAVORITES
+  =============================== */
 
   await db.insert(documentFavorites).values({
     documentId,
     userId,
   });
 
+  await createNotification({
+    userId,
+    type: 'document_favorited',
+    title: 'Added to favorites',
+    message: `"${document.title}" was added to your favorites.`,
+    documentId: document.id,
+  });
+
   return {
     isFavorite: true,
   };
 };
+
+/* =========================================
+   UPDATE DOCUMENT
+========================================= */
 
 export const updateDocument = async (
   id: string,
@@ -231,16 +301,71 @@ export const updateDocument = async (
     .where(eq(documents.id, id))
     .returning();
 
-  return document ?? null;
+  if (!document) {
+    return null;
+  }
+
+  await createNotification({
+    userId: document.createdBy,
+    type: 'document_updated',
+    title: 'Document updated',
+    message: `Your document "${document.title}" was updated successfully.`,
+    documentId: document.id,
+  });
+
+  return document;
 };
+
+/* =========================================
+   DELETE DOCUMENT
+========================================= */
 
 export const deleteDocument = async (id: string) => {
   const [document] = await db
-    .delete(documents)
-    .where(eq(documents.id, id))
-    .returning({
+    .select({
       id: documents.id,
-    });
+      title: documents.title,
+      createdBy: documents.createdBy,
+    })
+    .from(documents)
+    .where(eq(documents.id, id))
+    .limit(1);
 
-  return document ?? null;
+  if (!document) {
+    return null;
+  }
+
+  /*
+   * Create the notification before deleting
+   * the document because documentId references
+   * the documents table.
+   */
+
+  await createNotification({
+    userId: document.createdBy,
+    type: 'document_deleted',
+    title: 'Document deleted',
+    message: `Your document "${document.title}" was deleted.`,
+    documentId: null,
+  });
+
+  await db.delete(documents).where(eq(documents.id, id));
+
+  return {
+    id: document.id,
+  };
+};
+
+/* =========================================
+   DELETE ALL DOCUMENTS
+========================================= */
+
+export const deleteAllDocuments = async () => {
+  const result = await db.delete(documents).returning({
+    id: documents.id,
+  });
+
+  return {
+    deleted: result.length,
+  };
 };
