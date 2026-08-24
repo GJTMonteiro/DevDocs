@@ -21,7 +21,6 @@ const Sidebar = () => {
 
         <div className="sidebar-logo-text">
           <span>DevDocs</span>
-          <small>Documentation</small>
         </div>
       </div>
 

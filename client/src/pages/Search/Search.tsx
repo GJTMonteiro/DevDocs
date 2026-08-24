@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from 'react';
 
 import {
   FiArrowRight,
@@ -8,10 +14,12 @@ import {
   FiSearch as FiSearchIcon,
   FiZap,
 } from 'react-icons/fi';
+
 import { useNavigate } from 'react-router-dom';
 
 import Badge from '../../components/ui/Badge';
 import Card from '../../components/ui/Card';
+
 import { getDocuments, type Document } from '../../services/documents';
 
 import './Search.css';
@@ -19,12 +27,19 @@ import './Search.css';
 const Search = () => {
   const navigate = useNavigate();
 
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   const [documents, setDocuments] = useState<Document[]>([]);
   const [query, setQuery] = useState('');
   const [submittedQuery, setSubmittedQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState('');
+
+  /*
+   * =========================================
+   * LOAD DOCUMENTATION
+   * =========================================
+   */
 
   useEffect(() => {
     const loadDocuments = async () => {
@@ -49,6 +64,49 @@ const Search = () => {
     loadDocuments();
   }, []);
 
+  /*
+   * =========================================
+   * AUTO FOCUS SEARCH
+   * =========================================
+   */
+
+  useEffect(() => {
+    searchInputRef.current?.focus();
+  }, []);
+
+  /*
+   * =========================================
+   * GLOBAL SEARCH SHORTCUT
+   * =========================================
+   */
+
+  useEffect(() => {
+    const handleKeyboardShortcut = (event: globalThis.KeyboardEvent) => {
+      const isSearchShortcut =
+        (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k';
+
+      if (!isSearchShortcut) {
+        return;
+      }
+
+      event.preventDefault();
+
+      searchInputRef.current?.focus();
+    };
+
+    window.addEventListener('keydown', handleKeyboardShortcut);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyboardShortcut);
+    };
+  }, []);
+
+  /*
+   * =========================================
+   * FILTER DOCUMENTS
+   * =========================================
+   */
+
   const filteredDocuments = useMemo(() => {
     const normalizedQuery = submittedQuery.trim().toLowerCase();
 
@@ -66,11 +124,18 @@ const Search = () => {
     });
   }, [documents, submittedQuery]);
 
+  /*
+   * =========================================
+   * FORMAT DATE
+   * =========================================
+   */
+
   const formatUpdatedDate = (date: string) => {
     const updatedAt = new Date(date);
     const now = new Date();
 
     const difference = now.getTime() - updatedAt.getTime();
+
     const minutes = Math.floor(difference / (1000 * 60));
 
     if (minutes < 1) {
@@ -96,6 +161,12 @@ const Search = () => {
     return `${days} days ago`;
   };
 
+  /*
+   * =========================================
+   * DOCUMENT DESCRIPTION
+   * =========================================
+   */
+
   const getDescription = (document: Document) => {
     const content = document.content.trim();
 
@@ -106,33 +177,56 @@ const Search = () => {
     return `${content.slice(0, 180)}...`;
   };
 
+  /*
+   * =========================================
+   * SEARCH
+   * =========================================
+   */
+
   const handleSearch = () => {
     const normalizedQuery = query.trim();
 
     if (!normalizedQuery) {
       setSubmittedQuery('');
+      searchInputRef.current?.focus();
       return;
     }
 
-    setIsSearching(true);
     setError('');
-
-    setTimeout(() => {
-      setSubmittedQuery(normalizedQuery);
-      setIsSearching(false);
-    }, 250);
+    setSubmittedQuery(normalizedQuery);
   };
+
+  /*
+   * =========================================
+   * SEARCH SUGGESTIONS
+   * =========================================
+   */
 
   const handleSuggestion = (suggestion: string) => {
     setQuery(suggestion);
     setSubmittedQuery(suggestion);
+
+    searchInputRef.current?.focus();
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  /*
+   * =========================================
+   * ENTER KEY
+   * =========================================
+   */
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
+      event.preventDefault();
       handleSearch();
     }
   };
+
+  /*
+   * =========================================
+   * OPEN DOCUMENT
+   * =========================================
+   */
 
   const handleOpenDocument = (documentId: string) => {
     navigate(`/documentation/${documentId}`);
@@ -140,8 +234,18 @@ const Search = () => {
 
   const hasQuery = submittedQuery.trim().length > 0;
 
+  /*
+   * =========================================
+   * RENDER
+   * =========================================
+   */
+
   return (
     <div className="ai-search">
+      {/* =========================================
+          HEADER
+      ========================================= */}
+
       <section className="ai-search-header">
         <div className="ai-search-header-icon">
           <FiZap size={22} />
@@ -159,18 +263,24 @@ const Search = () => {
         </div>
       </section>
 
+      {/* =========================================
+          SEARCH BOX
+      ========================================= */}
+
       <section className="ai-search-box-section">
         <Card className="ai-search-box">
           <div className="ai-search-input-wrapper">
             <FiSearchIcon className="ai-search-input-icon" size={20} />
 
             <input
+              ref={searchInputRef}
               type="text"
               placeholder="Ask a question about your documentation..."
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               onKeyDown={handleKeyDown}
               disabled={isLoading}
+              aria-label="Search documentation"
             />
 
             <kbd>⌘ K</kbd>
@@ -180,12 +290,15 @@ const Search = () => {
             type="button"
             className="ai-search-submit"
             onClick={handleSearch}
-            disabled={isLoading || isSearching || !query.trim()}>
+            disabled={isLoading || !query.trim()}>
             <FiZap size={17} />
-
-            {isSearching ? 'Searching...' : 'Ask AI'}
+            Ask AI
           </button>
         </Card>
+
+        {/* =========================================
+            SUGGESTIONS
+        ========================================= */}
 
         <div className="ai-search-suggestions">
           <span>Try asking:</span>
@@ -212,7 +325,15 @@ const Search = () => {
         </div>
       </section>
 
+      {/* =========================================
+          ERROR
+      ========================================= */}
+
       {error && <div className="ai-search-error">{error}</div>}
+
+      {/* =========================================
+          SEARCH SUMMARY
+      ========================================= */}
 
       {hasQuery && !isLoading && !error && (
         <section className="ai-answer-section">
@@ -225,6 +346,7 @@ const Search = () => {
 
                 <div>
                   <h2>Search results</h2>
+
                   <span>Based on your documentation</span>
                 </div>
               </div>
@@ -256,6 +378,10 @@ const Search = () => {
         </section>
       )}
 
+      {/* =========================================
+          RESULTS
+      ========================================= */}
+
       <section className="search-results-section">
         <div className="search-results-header">
           <div>
@@ -279,6 +405,10 @@ const Search = () => {
           )}
         </div>
 
+        {/* =========================================
+            LOADING
+        ========================================= */}
+
         {isLoading && (
           <div className="search-results-empty">
             <FiFileText size={24} />
@@ -288,6 +418,10 @@ const Search = () => {
             <p>Fetching your documentation from the workspace.</p>
           </div>
         )}
+
+        {/* =========================================
+            EMPTY
+        ========================================= */}
 
         {!isLoading && !error && filteredDocuments.length === 0 && (
           <div className="search-results-empty">
@@ -304,6 +438,10 @@ const Search = () => {
             </p>
           </div>
         )}
+
+        {/* =========================================
+            DOCUMENTS
+        ========================================= */}
 
         {!isLoading && !error && filteredDocuments.length > 0 && (
           <div className="search-results-list">

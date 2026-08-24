@@ -2,18 +2,14 @@ const API_URL = 'http://localhost:3000/api';
 
 export interface UserSettings {
   userId: string;
-
+  name: string;
+  email: string;
   theme: 'dark' | 'light' | 'system';
-
-  language: 'English' | 'Portuguese';
-
   emailNotifications: boolean;
   documentationUpdates: boolean;
   mentions: boolean;
-
   aiAssistant: boolean;
   contextAwareResponses: boolean;
-
   createdAt: string;
   updatedAt: string;
 }

@@ -14,48 +14,97 @@ import {
 
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
-
 import { useTheme } from '../../context/ThemeContext';
+import { useUser } from '../../context/UserContext';
 
 import {
   getSettings,
   updateSettings as updateSettingsApi,
 } from '../../services/settings';
 
+import { updateProfile } from '../../services/profile';
+
 import './Settings.css';
 
 interface SettingsState {
-  name: string;
-  email: string;
-  role: string;
-
   theme: 'dark' | 'light' | 'system';
-
   emailNotifications: boolean;
   documentationUpdates: boolean;
   mentions: boolean;
-
   aiAssistant: boolean;
   contextAwareResponses: boolean;
 }
 
 const DEFAULT_SETTINGS: SettingsState = {
-  name: 'Guilherme Monteiro',
-  email: 'guilherme@example.com',
-  role: 'Developer',
-
   theme: 'dark',
-
   emailNotifications: true,
   documentationUpdates: true,
   mentions: true,
-
   aiAssistant: true,
   contextAwareResponses: true,
 };
 
+/* =========================================
+   ROLE OPTIONS
+   ========================================= */
+
+const ROLE_OPTIONS = [
+  'Developer',
+  'Frontend Developer',
+  'Backend Developer',
+  'Full Stack Developer',
+  'Mobile Developer',
+  'Software Engineer',
+  'Software Architect',
+  'Solutions Architect',
+  'Technical Lead',
+  'Engineering Manager',
+  'DevOps Engineer',
+  'Site Reliability Engineer',
+  'Cloud Engineer',
+  'Cloud Architect',
+  'Data Engineer',
+  'Data Scientist',
+  'Machine Learning Engineer',
+  'AI Engineer',
+  'QA Engineer',
+  'QA Automation Engineer',
+  'Security Engineer',
+  'Cybersecurity Specialist',
+  'IT Support',
+  'System Administrator',
+  'Database Administrator',
+  'Network Engineer',
+  'UI Designer',
+  'UX Designer',
+  'UI/UX Designer',
+  'Product Designer',
+  'Graphic Designer',
+  'Product Manager',
+  'Project Manager',
+  'Program Manager',
+  'Scrum Master',
+  'Business Analyst',
+  'Technical Writer',
+  'Documentation Specialist',
+  'Product Owner',
+  'Researcher',
+  'Marketing Manager',
+  'Content Manager',
+  'HR Manager',
+  'Administrator',
+  'Founder',
+  'Co-Founder',
+  'Other',
+];
+
+/* =========================================
+   SETTINGS
+   ========================================= */
+
 const Settings = () => {
   const { setTheme } = useTheme();
+  const { user, updateUser } = useUser();
 
   const [settings, setSettings] = useState<SettingsState>(DEFAULT_SETTINGS);
 
@@ -64,25 +113,22 @@ const Settings = () => {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-
   const [error, setError] = useState<string | null>(null);
 
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
 
   const [profileDraft, setProfileDraft] = useState({
     name: '',
     email: '',
+    role: 'Developer',
   });
 
   const [showSavedMessage, setShowSavedMessage] = useState(false);
 
-  /*
-   * =========================================
-   * LOAD SETTINGS
-   * =========================================
-   */
+  /* =========================================
+     LOAD SETTINGS
+     ========================================= */
 
   useEffect(() => {
     let isMounted = true;
@@ -99,24 +145,16 @@ const Settings = () => {
         }
 
         const loadedSettings: SettingsState = {
-          ...DEFAULT_SETTINGS,
-
           theme: data.theme,
-
           emailNotifications: data.emailNotifications,
-
           documentationUpdates: data.documentationUpdates,
-
           mentions: data.mentions,
-
           aiAssistant: data.aiAssistant,
-
           contextAwareResponses: data.contextAwareResponses,
         };
 
         setSettings(loadedSettings);
         setSavedSettings(loadedSettings);
-
         setTheme(loadedSettings.theme);
       } catch (err) {
         console.error('Failed to load settings:', err);
@@ -138,14 +176,13 @@ const Settings = () => {
     };
   }, [setTheme]);
 
-  /*
-   * =========================================
-   * CHANGE DETECTION
-   * =========================================
-   */
+  /* =========================================
+     CHANGE DETECTION
+     ========================================= */
 
   const hasChanges = useMemo(() => {
     return (
+      settings.theme !== savedSettings.theme ||
       settings.emailNotifications !== savedSettings.emailNotifications ||
       settings.documentationUpdates !== savedSettings.documentationUpdates ||
       settings.mentions !== savedSettings.mentions ||
@@ -154,11 +191,9 @@ const Settings = () => {
     );
   }, [settings, savedSettings]);
 
-  /*
-   * =========================================
-   * UPDATE LOCAL STATE
-   * =========================================
-   */
+  /* =========================================
+     UPDATE LOCAL STATE
+     ========================================= */
 
   const updateSetting = async <K extends keyof SettingsState>(
     key: K,
@@ -173,7 +208,6 @@ const Settings = () => {
 
     if (key === 'theme') {
       const newTheme = value as SettingsState['theme'];
-
       const previousTheme = savedSettings.theme;
 
       setSettings((current) => ({
@@ -216,9 +250,8 @@ const Settings = () => {
     }
 
     /*
-     * =========================================
-     * OTHER SETTINGS
-     * =========================================
+     * Other settings are saved when
+     * the user clicks Save changes.
      */
 
     setSettings((current) => ({
@@ -228,8 +261,7 @@ const Settings = () => {
 
     /*
      * If AI Assistant is disabled,
-     * context-aware responses must also
-     * be disabled.
+     * context-aware responses are also disabled.
      */
 
     if (key === 'aiAssistant' && value === false) {
@@ -241,11 +273,9 @@ const Settings = () => {
     }
   };
 
-  /*
-   * =========================================
-   * SAVE SETTINGS
-   * =========================================
-   */
+  /* =========================================
+     SAVE SETTINGS
+     ========================================= */
 
   const handleSaveChanges = async () => {
     if (!hasChanges || isSaving) {
@@ -259,39 +289,26 @@ const Settings = () => {
 
       const updated = await updateSettingsApi({
         theme: settings.theme,
-
         emailNotifications: settings.emailNotifications,
-
         documentationUpdates: settings.documentationUpdates,
-
         mentions: settings.mentions,
-
         aiAssistant: settings.aiAssistant,
-
         contextAwareResponses: settings.contextAwareResponses,
       });
 
       const updatedSettings: SettingsState = {
         ...settings,
-
         theme: updated.theme,
-
         emailNotifications: updated.emailNotifications,
-
         documentationUpdates: updated.documentationUpdates,
-
         mentions: updated.mentions,
-
         aiAssistant: updated.aiAssistant,
-
         contextAwareResponses: updated.contextAwareResponses,
       };
 
       setSettings(updatedSettings);
       setSavedSettings(updatedSettings);
-
       setTheme(updated.theme);
-
       setShowSavedMessage(true);
 
       window.setTimeout(() => {
@@ -306,11 +323,9 @@ const Settings = () => {
     }
   };
 
-  /*
-   * =========================================
-   * CANCEL CHANGES
-   * =========================================
-   */
+  /* =========================================
+     CANCEL CHANGES
+     ========================================= */
 
   const handleCancelChanges = () => {
     if (!hasChanges) {
@@ -325,85 +340,112 @@ const Settings = () => {
       return;
     }
 
-    setSettings((current) => ({
-      ...current,
-      emailNotifications: savedSettings.emailNotifications,
-
-      documentationUpdates: savedSettings.documentationUpdates,
-
-      mentions: savedSettings.mentions,
-
-      aiAssistant: savedSettings.aiAssistant,
-
-      contextAwareResponses: savedSettings.contextAwareResponses,
-    }));
-
+    setSettings(savedSettings);
+    setTheme(savedSettings.theme);
     setShowSavedMessage(false);
     setError(null);
   };
 
-  /*
-   * =========================================
-   * PROFILE
-   * =========================================
-   */
+  /* =========================================
+     PROFILE
+     ========================================= */
 
   const handleOpenProfile = () => {
-    setProfileDraft({
-      name: settings.name,
-      email: settings.email,
-    });
-
-    setIsProfileModalOpen(true);
-  };
-
-  const handleSaveProfile = () => {
-    const name = profileDraft.name.trim();
-    const email = profileDraft.email.trim();
-
-    if (!name || !email) {
+    if (!user) {
       return;
     }
 
-    setSettings((current) => ({
-      ...current,
-      name,
-      email,
-    }));
+    setProfileDraft({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    });
 
-    setShowSavedMessage(false);
-    setIsProfileModalOpen(false);
+    setError(null);
+    setIsProfileModalOpen(true);
   };
 
-  /*
-   * =========================================
-   * SECURITY
-   * =========================================
-   */
+  const handleSaveProfile = async () => {
+    const name = profileDraft.name.trim();
+    const email = profileDraft.email.trim();
+    const role = profileDraft.role.trim();
+
+    if (!name || !email || !role || isSaving || !user) {
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      setError(null);
+      setShowSavedMessage(false);
+
+      /*
+       * Update profile through the profile service.
+       */
+
+      const updatedProfile = await updateProfile(name, email, role);
+
+      /*
+       * Update the global UserContext only
+       * after the API succeeds.
+       */
+
+      updateUser({
+        name: updatedProfile.name,
+        email: updatedProfile.email,
+        role: updatedProfile.role,
+      });
+
+      setProfileDraft({
+        name: updatedProfile.name,
+        email: updatedProfile.email,
+        role: updatedProfile.role,
+      });
+
+      setIsProfileModalOpen(false);
+      setShowSavedMessage(true);
+
+      window.setTimeout(() => {
+        setShowSavedMessage(false);
+      }, 2500);
+    } catch (err) {
+      console.error('Failed to save profile:', err);
+
+      setError('Unable to update your profile. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  /* =========================================
+     SECURITY
+     ========================================= */
 
   const handleOpenSecurity = () => {
     setIsSecurityModalOpen(true);
   };
 
-  /*
-   * =========================================
-   * PROFILE INITIALS
-   * =========================================
-   */
+  /* =========================================
+     USER DISPLAY DATA
+     ========================================= */
 
-  const initials = settings.name
-    .split(' ')
-    .filter(Boolean)
-    .map((part) => part[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
+  const displayName = user?.name ?? 'Loading...';
+  const displayEmail = user?.email ?? 'Loading...';
+  const displayRole = user?.role ?? 'Developer';
 
-  /*
-   * =========================================
-   * LOADING STATE
-   * =========================================
-   */
+  const initials = user?.name
+    ? user.name
+        .split(' ')
+        .filter(Boolean)
+        .map((part) => part[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase()
+    : '--';
+
+  /* =========================================
+     LOADING STATE
+     ========================================= */
 
   if (isLoading) {
     return (
@@ -427,11 +469,13 @@ const Settings = () => {
     );
   }
 
+  /* =========================================
+     PAGE
+     ========================================= */
+
   return (
     <div className="settings">
-      {/* =========================================
-          HEADER
-      ========================================= */}
+      {/* HEADER */}
 
       <section className="settings-header">
         <div>
@@ -445,9 +489,7 @@ const Settings = () => {
         </div>
       </section>
 
-      {/* =========================================
-          ERROR
-      ========================================= */}
+      {/* ERROR */}
 
       {error && (
         <div className="settings-error">
@@ -462,9 +504,7 @@ const Settings = () => {
         </div>
       )}
 
-      {/* =========================================
-          ACCOUNT
-      ========================================= */}
+      {/* ACCOUNT */}
 
       <section className="settings-section">
         <div className="settings-section-header">
@@ -480,14 +520,17 @@ const Settings = () => {
             <div className="settings-avatar">{initials}</div>
 
             <div className="settings-profile-info">
-              <h3>{settings.name}</h3>
+              <h3>{displayName}</h3>
 
-              <p>{settings.email}</p>
+              <p>{displayEmail}</p>
 
-              <span>{settings.role}</span>
+              <span>{displayRole}</span>
             </div>
 
-            <Button variant="secondary" onClick={handleOpenProfile}>
+            <Button
+              variant="secondary"
+              onClick={handleOpenProfile}
+              disabled={!user}>
               Edit profile
             </Button>
           </div>
@@ -497,7 +540,8 @@ const Settings = () => {
           <button
             type="button"
             className="settings-row settings-row-button"
-            onClick={handleOpenProfile}>
+            onClick={handleOpenProfile}
+            disabled={!user}>
             <div className="settings-row-icon blue">
               <FiUser size={18} />
             </div>
@@ -530,9 +574,7 @@ const Settings = () => {
         </Card>
       </section>
 
-      {/* =========================================
-          APPEARANCE
-      ========================================= */}
+      {/* APPEARANCE */}
 
       <section className="settings-section">
         <div className="settings-section-header">
@@ -565,18 +607,14 @@ const Settings = () => {
                 )
               }>
               <option value="dark">Dark</option>
-
               <option value="light">Light</option>
-
               <option value="system">System</option>
             </select>
           </div>
         </Card>
       </section>
 
-      {/* =========================================
-          NOTIFICATIONS
-      ========================================= */}
+      {/* NOTIFICATIONS */}
 
       <section className="settings-section">
         <div className="settings-section-header">
@@ -668,9 +706,7 @@ const Settings = () => {
         </Card>
       </section>
 
-      {/* =========================================
-          AI ASSISTANT
-      ========================================= */}
+      {/* AI ASSISTANT */}
 
       <section className="settings-section">
         <div className="settings-section-header">
@@ -739,9 +775,7 @@ const Settings = () => {
         </Card>
       </section>
 
-      {/* =========================================
-          ACTIONS
-      ========================================= */}
+      {/* ACTIONS */}
 
       <div className="settings-actions">
         {showSavedMessage && (
@@ -765,14 +799,12 @@ const Settings = () => {
         </Button>
       </div>
 
-      {/* =========================================
-          PROFILE MODAL
-      ========================================= */}
+      {/* PROFILE MODAL */}
 
       {isProfileModalOpen && (
         <div
           className="settings-modal-overlay"
-          onClick={() => setIsProfileModalOpen(false)}>
+          onClick={() => !isSaving && setIsProfileModalOpen(false)}>
           <div
             className="settings-modal"
             onClick={(event) => event.stopPropagation()}>
@@ -786,12 +818,15 @@ const Settings = () => {
               <button
                 type="button"
                 className="settings-modal-close"
-                onClick={() => setIsProfileModalOpen(false)}>
+                onClick={() => !isSaving && setIsProfileModalOpen(false)}
+                disabled={isSaving}>
                 <FiX size={17} />
               </button>
             </div>
 
             <div className="settings-modal-body">
+              {/* NAME */}
+
               <div className="settings-form-field">
                 <label htmlFor="settings-name">Name</label>
 
@@ -799,6 +834,7 @@ const Settings = () => {
                   id="settings-name"
                   type="text"
                   value={profileDraft.name}
+                  disabled={isSaving}
                   onChange={(event) =>
                     setProfileDraft((current) => ({
                       ...current,
@@ -808,6 +844,8 @@ const Settings = () => {
                 />
               </div>
 
+              {/* EMAIL */}
+
               <div className="settings-form-field">
                 <label htmlFor="settings-email">Email</label>
 
@@ -815,6 +853,7 @@ const Settings = () => {
                   id="settings-email"
                   type="email"
                   value={profileDraft.email}
+                  disabled={isSaving}
                   onChange={(event) =>
                     setProfileDraft((current) => ({
                       ...current,
@@ -823,31 +862,71 @@ const Settings = () => {
                   }
                 />
               </div>
+
+              {/* ROLE */}
+
+              <div className="settings-form-field">
+                <label htmlFor="settings-role">Role</label>
+
+                <select
+                  id="settings-role"
+                  className="settings-native-select"
+                  value={profileDraft.role}
+                  disabled={isSaving}
+                  onChange={(event) =>
+                    setProfileDraft((current) => ({
+                      ...current,
+                      role: event.target.value,
+                    }))
+                  }>
+                  {/*
+                   * If the current role exists in the
+                   * database but not in ROLE_OPTIONS,
+                   * keep it available in the select.
+                   */}
+
+                  {profileDraft.role &&
+                    !ROLE_OPTIONS.includes(profileDraft.role) && (
+                      <option value={profileDraft.role}>
+                        {profileDraft.role}
+                      </option>
+                    )}
+
+                  {ROLE_OPTIONS.map((role) => (
+                    <option key={role} value={role}>
+                      {role}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="settings-modal-footer">
               <Button
                 variant="ghost"
+                disabled={isSaving}
                 onClick={() => setIsProfileModalOpen(false)}>
                 Cancel
               </Button>
 
               <Button
                 disabled={
-                  !profileDraft.name.trim() || !profileDraft.email.trim()
+                  !profileDraft.name.trim() ||
+                  !profileDraft.email.trim() ||
+                  !profileDraft.role.trim() ||
+                  isSaving
                 }
                 onClick={handleSaveProfile}>
                 <FiCheck size={15} />
-                Save profile
+
+                {isSaving ? 'Saving...' : 'Save profile'}
               </Button>
             </div>
           </div>
         </div>
       )}
 
-      {/* =========================================
-          SECURITY MODAL
-      ========================================= */}
+      {/* SECURITY MODAL */}
 
       {isSecurityModalOpen && (
         <div
