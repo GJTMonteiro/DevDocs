@@ -1,9 +1,15 @@
 import { and, desc, eq, sql } from 'drizzle-orm';
 
 import { db } from '../config/database.js';
+
 import { documents } from '../db/schema/documents.js';
+
 import { documentFavorites } from '../db/schema/documentFavorites.js';
+
 import { users } from '../db/schema/users.js';
+
+import { indexDocument } from '../ai/indexDocument.js';
+
 import { createNotification } from './notificationService.js';
 
 interface CreateDocumentInput {
@@ -45,8 +51,24 @@ export const createDocument = async (input: CreateDocumentInput) => {
     throw new Error('Failed to create document.');
   }
 
+  /*
+   * Index the document immediately after creation.
+   *
+   * This creates:
+   * - document chunks
+   * - embeddings for each chunk
+   *
+   * We do not fail document creation if AI indexing fails.
+   */
+
+  try {
+    await indexDocument(document.id);
+  } catch (error) {
+    console.error(`Failed to index document "${document.id}":`, error);
+  }
+
   await createNotification({
-    userId: input.createdBy,
+    userId: document.createdBy,
     type: 'document_created',
     title: 'Document created',
     message: `Your document "${document.title}" was created successfully.`,
@@ -305,6 +327,22 @@ export const updateDocument = async (
     return null;
   }
 
+  /*
+   * Re-index the document after an update.
+   *
+   * This is especially important when the content changes,
+   * because the old chunks and embeddings are no longer valid.
+   *
+   * indexDocument() removes the old chunks and embeddings
+   * and creates new ones based on the current document content.
+   */
+
+  try {
+    await indexDocument(document.id);
+  } catch (error) {
+    console.error(`Failed to re-index document "${document.id}":`, error);
+  }
+
   await createNotification({
     userId: document.createdBy,
     type: 'document_updated',
@@ -348,6 +386,11 @@ export const deleteDocument = async (id: string) => {
     message: `Your document "${document.title}" was deleted.`,
     documentId: null,
   });
+
+  /*
+   * The document chunks and embeddings are deleted
+   * automatically through ON DELETE CASCADE.
+   */
 
   await db.delete(documents).where(eq(documents.id, id));
 
