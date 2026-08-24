@@ -7,7 +7,7 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
-  color: var(--text-primary, #f8fafc);
+  color: var(--text);
 }
 
 /* =========================================
@@ -23,7 +23,7 @@
 
 .discover-eyebrow {
   margin: 0 0 0.5rem;
-  color: var(--primary, #3b82f6);
+  color: var(--accent);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -32,6 +32,7 @@
 
 .discover-header h1 {
   margin: 0;
+  color: var(--text-h);
   font-size: 2.25rem;
   line-height: 1.15;
   font-weight: 700;
@@ -41,7 +42,7 @@
 .discover-description {
   max-width: 680px;
   margin: 0.75rem 0 0;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text);
   font-size: 0.95rem;
   line-height: 1.7;
 }
@@ -59,21 +60,18 @@
   min-height: 46px;
   margin-bottom: 1.5rem;
   padding: 0 1rem;
-
-  background: var(--surface, #1e293b);
-  border: 1px solid var(--border, #334155);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 10px;
-
-  color: var(--text-secondary, #94a3b8);
-
+  color: var(--text-muted);
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
 }
 
 .discover-search:focus-within {
-  border-color: var(--primary, #3b82f6);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-bg);
 }
 
 .discover-search input {
@@ -82,14 +80,13 @@
   border: 0;
   outline: none;
   background: transparent;
-
-  color: var(--text-primary, #f8fafc);
+  color: var(--text-h);
   font: inherit;
   font-size: 0.9rem;
 }
 
 .discover-search input::placeholder {
-  color: var(--text-muted, #64748b);
+  color: var(--text-muted);
 }
 
 /* =========================================
@@ -108,21 +105,15 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-
   padding: 0.6rem 0.9rem;
-
-  border: 1px solid var(--border, #334155);
+  border: 1px solid var(--border);
   border-radius: 8px;
-
   background: transparent;
-  color: var(--text-secondary, #94a3b8);
-
+  color: var(--text);
   font: inherit;
   font-size: 0.82rem;
   font-weight: 500;
-
   cursor: pointer;
-
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease,
@@ -131,9 +122,9 @@
 }
 
 .discover-category:hover {
-  background: var(--surface, #1e293b);
-  border-color: var(--primary, #3b82f6);
-  color: var(--text-primary, #f8fafc);
+  background: var(--surface-hover);
+  border-color: var(--accent);
+  color: var(--text-h);
 }
 
 .discover-category:active {
@@ -141,9 +132,9 @@
 }
 
 .discover-category.active {
-  background: rgba(59, 130, 246, 0.12);
-  border-color: rgba(59, 130, 246, 0.45);
-  color: var(--primary, #3b82f6);
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+  color: var(--accent);
 }
 
 /* =========================================
@@ -153,13 +144,10 @@
 .discover-error {
   margin-bottom: 1.5rem;
   padding: 0.9rem 1rem;
-
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border: 1px solid var(--danger-border);
   border-radius: 10px;
-
-  background: rgba(239, 68, 68, 0.08);
-  color: #fca5a5;
-
+  background: var(--danger-bg);
+  color: var(--danger);
   font-size: 0.85rem;
 }
 
@@ -172,32 +160,24 @@
 }
 
 .discover-featured-card {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 1.25rem;
-
-  position: relative;
-
   min-height: 150px;
   padding: 1.5rem 1.75rem;
-
   overflow: hidden;
 }
 
 .discover-featured-card::after {
   content: '';
-
   position: absolute;
   top: -80px;
   right: -80px;
-
   width: 220px;
   height: 220px;
-
   border-radius: 50%;
-
-  background: rgba(59, 130, 246, 0.08);
-
+  background: var(--accent-bg);
   pointer-events: none;
 }
 
@@ -205,17 +185,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
   flex-shrink: 0;
-
   width: 48px;
   height: 48px;
-
-  border: 1px solid rgba(59, 130, 246, 0.25);
+  border: 1px solid var(--accent-border);
   border-radius: 12px;
-
-  background: rgba(59, 130, 246, 0.1);
-  color: var(--primary, #3b82f6);
+  background: var(--accent-bg);
+  color: var(--accent);
 }
 
 .featured-content {
@@ -226,7 +202,7 @@
 
 .featured-content h2 {
   margin: 0.65rem 0 0.35rem;
-
+  color: var(--text-h);
   font-size: 1.25rem;
   font-weight: 650;
   letter-spacing: -0.02em;
@@ -234,10 +210,8 @@
 
 .featured-content p {
   max-width: 650px;
-
   margin: 0;
-
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text);
   font-size: 0.85rem;
   line-height: 1.6;
 }
@@ -245,24 +219,17 @@
 .featured-arrow {
   position: relative;
   z-index: 1;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   flex-shrink: 0;
-
   width: 38px;
   height: 38px;
-
-  border: 1px solid var(--border, #334155);
+  border: 1px solid var(--border);
   border-radius: 8px;
-
   background: transparent;
-  color: var(--text-secondary, #94a3b8);
-
+  color: var(--text);
   cursor: pointer;
-
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease,
@@ -271,9 +238,9 @@
 }
 
 .featured-arrow:hover {
-  background: var(--surface-hover, #273449);
-  border-color: var(--primary, #3b82f6);
-  color: var(--primary, #3b82f6);
+  background: var(--surface-hover);
+  border-color: var(--accent);
+  color: var(--accent);
   transform: translateX(2px);
 }
 
@@ -290,13 +257,12 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 1rem;
-
   margin-bottom: 1.25rem;
 }
 
 .discover-section-header h2 {
   margin: 0;
-
+  color: var(--text-h);
   font-size: 1.2rem;
   font-weight: 650;
   letter-spacing: -0.02em;
@@ -304,8 +270,7 @@
 
 .discover-section-header p {
   margin: 0.35rem 0 0;
-
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text);
   font-size: 0.82rem;
   line-height: 1.5;
 }
@@ -314,21 +279,18 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-
   flex-shrink: 0;
-
-  color: var(--primary, #3b82f6);
+  color: var(--accent);
   font-size: 0.82rem;
   font-weight: 600;
   text-decoration: none;
-
   transition:
     color 0.2s ease,
     gap 0.2s ease;
 }
 
 .discover-section-header a:hover {
-  color: var(--primary-hover, #2563eb);
+  color: var(--accent-hover);
   gap: 0.55rem;
 }
 
@@ -345,7 +307,6 @@
 .discover-document-link {
   display: block;
   min-width: 0;
-
   color: inherit;
   text-decoration: none;
 }
@@ -353,7 +314,6 @@
 .discover-document {
   height: 100%;
   padding: 1.25rem;
-
   transition:
     border-color 0.2s ease,
     transform 0.2s ease,
@@ -361,9 +321,9 @@
 }
 
 .discover-document-link:hover .discover-document {
-  border-color: rgba(59, 130, 246, 0.4);
+  border-color: var(--accent-border);
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow);
 }
 
 /* =========================================
@@ -374,17 +334,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
   width: 40px;
   height: 40px;
-
   margin-bottom: 1rem;
-
-  border: 1px solid var(--border, #334155);
+  border: 1px solid var(--accent-border);
   border-radius: 10px;
-
-  background: rgba(59, 130, 246, 0.08);
-  color: var(--primary, #3b82f6);
+  background: var(--accent-bg);
+  color: var(--accent);
 }
 
 /* =========================================
@@ -393,27 +349,20 @@
 
 .discover-document h3 {
   margin: 0.8rem 0 0.5rem;
-
-  color: var(--text-primary, #f8fafc);
-
+  color: var(--text-h);
   font-size: 1rem;
   font-weight: 650;
   line-height: 1.4;
-
   letter-spacing: -0.01em;
 }
 
 .discover-document > p {
   display: -webkit-box;
   overflow: hidden;
-
   margin: 0;
-
-  color: var(--text-secondary, #94a3b8);
-
+  color: var(--text);
   font-size: 0.82rem;
   line-height: 1.65;
-
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   line-clamp: 3;
@@ -428,14 +377,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-
   margin-top: 1.25rem;
   padding-top: 0.9rem;
-
-  border-top: 1px solid var(--border, #334155);
-
-  color: var(--text-muted, #64748b);
-
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
   font-size: 0.7rem;
 }
 
@@ -443,7 +388,6 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-
   min-width: 0;
 }
 
@@ -463,7 +407,6 @@
 
 .discover-recommended-link {
   display: block;
-
   color: inherit;
   text-decoration: none;
 }
@@ -472,9 +415,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-
   padding: 1rem 1.15rem;
-
   transition:
     border-color 0.2s ease,
     transform 0.2s ease,
@@ -482,9 +423,9 @@
 }
 
 .discover-recommended-link:hover .discover-recommended {
-  border-color: rgba(59, 130, 246, 0.4);
+  border-color: var(--accent-border);
   transform: translateX(2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+  box-shadow: var(--shadow);
 }
 
 /* =========================================
@@ -495,17 +436,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
   flex-shrink: 0;
-
   width: 42px;
   height: 42px;
-
-  border: 1px solid var(--border, #334155);
+  border: 1px solid var(--accent-border);
   border-radius: 10px;
-
-  background: rgba(59, 130, 246, 0.08);
-  color: var(--primary, #3b82f6);
+  background: var(--accent-bg);
+  color: var(--accent);
 }
 
 /* =========================================
@@ -521,22 +458,16 @@
   display: flex;
   align-items: center;
   gap: 0.65rem;
-
   min-width: 0;
 }
 
 .recommended-title-row h3 {
   min-width: 0;
-
   margin: 0;
-
   overflow: hidden;
-
-  color: var(--text-primary, #f8fafc);
-
+  color: var(--text-h);
   font-size: 0.92rem;
   font-weight: 650;
-
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -544,14 +475,10 @@
 .recommended-content > p {
   display: -webkit-box;
   overflow: hidden;
-
   margin: 0.35rem 0 0;
-
-  color: var(--text-secondary, #94a3b8);
-
+  color: var(--text);
   font-size: 0.78rem;
   line-height: 1.5;
-
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -566,11 +493,8 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 1rem;
-
   margin-top: 0.65rem;
-
-  color: var(--text-muted, #64748b);
-
+  color: var(--text-muted);
   font-size: 0.7rem;
 }
 
@@ -588,17 +512,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
   flex-shrink: 0;
-
   width: 34px;
   height: 34px;
-
-  border: 1px solid var(--border, #334155);
+  border: 1px solid var(--border);
   border-radius: 8px;
-
-  color: var(--text-muted, #64748b);
-
+  color: var(--text-muted);
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease,
@@ -607,9 +526,9 @@
 }
 
 .discover-recommended-link:hover .recommended-arrow {
-  background: rgba(59, 130, 246, 0.08);
-  border-color: rgba(59, 130, 246, 0.35);
-  color: var(--primary, #3b82f6);
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+  color: var(--accent);
   transform: translateX(2px);
 }
 
@@ -622,40 +541,31 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
   min-height: 220px;
   padding: 2rem;
-
-  border: 1px dashed var(--border, #334155);
+  border: 1px dashed var(--border-hover);
   border-radius: 12px;
-
-  background: rgba(15, 23, 42, 0.25);
-
+  background: var(--surface-secondary);
   text-align: center;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text);
 }
 
 .discover-empty svg {
   margin-bottom: 0.75rem;
-  color: var(--text-muted, #64748b);
+  color: var(--text-muted);
 }
 
 .discover-empty h3 {
   margin: 0;
-
-  color: var(--text-primary, #f8fafc);
-
+  color: var(--text-h);
   font-size: 0.95rem;
   font-weight: 650;
 }
 
 .discover-empty p {
   max-width: 420px;
-
   margin: 0.5rem 0 1rem;
-
-  color: var(--text-secondary, #94a3b8);
-
+  color: var(--text);
   font-size: 0.8rem;
   line-height: 1.6;
 }
@@ -664,21 +574,15 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-
   padding: 0.65rem 0.9rem;
-
-  border: 1px solid var(--border, #334155);
+  border: 1px solid var(--border);
   border-radius: 8px;
-
-  background: var(--surface, #1e293b);
-  color: var(--text-primary, #f8fafc);
-
+  background: var(--surface);
+  color: var(--text-h);
   font: inherit;
   font-size: 0.8rem;
   font-weight: 600;
-
   cursor: pointer;
-
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease,
@@ -686,9 +590,9 @@
 }
 
 .discover-empty button:hover {
-  border-color: var(--primary, #3b82f6);
-  background: rgba(59, 130, 246, 0.08);
-  color: var(--primary, #3b82f6);
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  color: var(--accent);
 }
 
 /* =========================================
@@ -753,9 +657,7 @@
   .discover-categories {
     overflow-x: auto;
     flex-wrap: nowrap;
-
     padding-bottom: 0.25rem;
-
     scrollbar-width: none;
   }
 
