@@ -1,60 +1,147 @@
+import { useEffect, useMemo, useState } from 'react';
+
 import {
   FiArrowRight,
   FiBookOpen,
   FiClock,
   FiFileText,
-  FiSearch,
+  FiSearch as FiSearchIcon,
   FiZap,
 } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 
-import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
+import Card from '../../components/ui/Card';
+import { getDocuments, type Document } from '../../services/documents';
 
 import './Search.css';
 
-interface SearchResult {
-  id: number;
-  title: string;
-  description: string;
-  category: string;
-  type: string;
-  updated: string;
-}
-
-const searchResults: SearchResult[] = [
-  {
-    id: 1,
-    title: 'Authentication Guide',
-    description:
-      'How authentication and authorization work across the DevDocs platform, including JWT tokens, sessions and protected routes.',
-    category: 'Backend',
-    type: 'Guide',
-    updated: '10 minutes ago',
-  },
-  {
-    id: 2,
-    title: 'API Architecture',
-    description:
-      'Overview of the REST API architecture, endpoint conventions, request validation and service organization.',
-    category: 'Architecture',
-    type: 'Documentation',
-    updated: '1 hour ago',
-  },
-  {
-    id: 3,
-    title: 'React Components',
-    description:
-      'Internal guidelines for creating reusable React components, component composition and frontend conventions.',
-    category: 'Frontend',
-    type: 'Guide',
-    updated: '3 hours ago',
-  },
-];
-
 const Search = () => {
+  const navigate = useNavigate();
+
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [query, setQuery] = useState('');
+  const [submittedQuery, setSubmittedQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const loadDocuments = async () => {
+      try {
+        setIsLoading(true);
+        setError('');
+
+        const data = await getDocuments();
+
+        setDocuments(data);
+      } catch (error) {
+        setError(
+          error instanceof Error
+            ? error.message
+            : 'Failed to load documentation.',
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDocuments();
+  }, []);
+
+  const filteredDocuments = useMemo(() => {
+    const normalizedQuery = submittedQuery.trim().toLowerCase();
+
+    if (!normalizedQuery) {
+      return documents;
+    }
+
+    return documents.filter((document) => {
+      return (
+        document.title.toLowerCase().includes(normalizedQuery) ||
+        document.content.toLowerCase().includes(normalizedQuery) ||
+        document.category?.toLowerCase().includes(normalizedQuery) ||
+        document.author.name.toLowerCase().includes(normalizedQuery)
+      );
+    });
+  }, [documents, submittedQuery]);
+
+  const formatUpdatedDate = (date: string) => {
+    const updatedAt = new Date(date);
+    const now = new Date();
+
+    const difference = now.getTime() - updatedAt.getTime();
+    const minutes = Math.floor(difference / (1000 * 60));
+
+    if (minutes < 1) {
+      return 'Just now';
+    }
+
+    if (minutes < 60) {
+      return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+    }
+
+    const hours = Math.floor(minutes / 60);
+
+    if (hours < 24) {
+      return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+    }
+
+    const days = Math.floor(hours / 24);
+
+    if (days === 1) {
+      return 'Yesterday';
+    }
+
+    return `${days} days ago`;
+  };
+
+  const getDescription = (document: Document) => {
+    const content = document.content.trim();
+
+    if (content.length <= 180) {
+      return content;
+    }
+
+    return `${content.slice(0, 180)}...`;
+  };
+
+  const handleSearch = () => {
+    const normalizedQuery = query.trim();
+
+    if (!normalizedQuery) {
+      setSubmittedQuery('');
+      return;
+    }
+
+    setIsSearching(true);
+    setError('');
+
+    setTimeout(() => {
+      setSubmittedQuery(normalizedQuery);
+      setIsSearching(false);
+    }, 250);
+  };
+
+  const handleSuggestion = (suggestion: string) => {
+    setQuery(suggestion);
+    setSubmittedQuery(suggestion);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const handleOpenDocument = (documentId: string) => {
+    navigate(`/documentation/${documentId}`);
+  };
+
+  const hasQuery = submittedQuery.trim().length > 0;
+
   return (
     <div className="ai-search">
-      {/* Header */}
       <section className="ai-search-header">
         <div className="ai-search-header-icon">
           <FiZap size={22} />
@@ -72,139 +159,208 @@ const Search = () => {
         </div>
       </section>
 
-      {/* Search */}
       <section className="ai-search-box-section">
         <Card className="ai-search-box">
           <div className="ai-search-input-wrapper">
-            <FiSearch className="ai-search-input-icon" size={20} />
+            <FiSearchIcon className="ai-search-input-icon" size={20} />
 
             <input
               type="text"
               placeholder="Ask a question about your documentation..."
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={isLoading}
             />
 
             <kbd>⌘ K</kbd>
           </div>
 
-          <button className="ai-search-submit">
+          <button
+            type="button"
+            className="ai-search-submit"
+            onClick={handleSearch}
+            disabled={isLoading || isSearching || !query.trim()}>
             <FiZap size={17} />
-            Ask AI
+
+            {isSearching ? 'Searching...' : 'Ask AI'}
           </button>
         </Card>
 
         <div className="ai-search-suggestions">
           <span>Try asking:</span>
 
-          <button>How does authentication work?</button>
+          <button
+            type="button"
+            onClick={() => handleSuggestion('How does authentication work?')}>
+            How does authentication work?
+          </button>
 
-          <button>Where is the API documented?</button>
+          <button
+            type="button"
+            onClick={() => handleSuggestion('Where is the API documented?')}>
+            Where is the API documented?
+          </button>
 
-          <button>How should React components be structured?</button>
+          <button
+            type="button"
+            onClick={() =>
+              handleSuggestion('How should React components be structured?')
+            }>
+            How should React components be structured?
+          </button>
         </div>
       </section>
 
-      {/* AI Answer */}
-      <section className="ai-answer-section">
-        <Card className="ai-answer-card">
-          <div className="ai-answer-header">
-            <div className="ai-answer-title">
-              <div className="ai-answer-icon">
-                <FiZap size={17} />
+      {error && <div className="ai-search-error">{error}</div>}
+
+      {hasQuery && !isLoading && !error && (
+        <section className="ai-answer-section">
+          <Card className="ai-answer-card">
+            <div className="ai-answer-header">
+              <div className="ai-answer-title">
+                <div className="ai-answer-icon">
+                  <FiZap size={17} />
+                </div>
+
+                <div>
+                  <h2>Search results</h2>
+                  <span>Based on your documentation</span>
+                </div>
               </div>
 
-              <div>
-                <h2>AI Answer</h2>
+              <Badge variant="blue">Documentation</Badge>
+            </div>
 
-                <span>Based on your documentation</span>
+            <div className="ai-answer-content">
+              <p>
+                Here are the documents that best match your search. The AI
+                answer will be connected to the documentation RAG system here.
+              </p>
+
+              <div className="ai-answer-highlight">
+                <strong>Your question</strong>
+
+                <span>{submittedQuery}</span>
               </div>
             </div>
 
-            <Badge variant="blue">AI Generated</Badge>
-          </div>
-
-          <div className="ai-answer-content">
-            <p>
-              Authentication in DevDocs is handled through JWT-based
-              authentication. Users authenticate through the API and receive an
-              access token that is used to access protected resources.
-            </p>
-
-            <p>
-              Protected routes use authentication middleware to validate the
-              token before allowing the request to continue. Authorization can
-              then be applied based on the user's role and permissions.
-            </p>
-
-            <div className="ai-answer-highlight">
-              <strong>In short</strong>
-
+            <div className="ai-answer-footer">
               <span>
-                Login → JWT token → Authentication middleware → Protected
-                resource
+                {filteredDocuments.length === 0
+                  ? 'No matching documents'
+                  : 'Answer generated from your documentation'}
               </span>
             </div>
-          </div>
+          </Card>
+        </section>
+      )}
 
-          <div className="ai-answer-footer">
-            <span>Answer generated from 4 documents</span>
-
-            <button>
-              View sources
-              <FiArrowRight size={14} />
-            </button>
-          </div>
-        </Card>
-      </section>
-
-      {/* Sources */}
       <section className="search-results-section">
         <div className="search-results-header">
           <div>
-            <h2>Relevant documentation</h2>
+            <h2>{hasQuery ? 'Relevant documentation' : 'Documentation'}</h2>
 
-            <p>Documents used to generate the answer.</p>
+            <p>
+              {hasQuery
+                ? 'Documents matching your search.'
+                : 'Browse the documentation available in your workspace.'}
+            </p>
           </div>
 
-          <span>3 results</span>
+          {!isLoading && (
+            <span>
+              {filteredDocuments.length === 0
+                ? 'No documents'
+                : filteredDocuments.length === 1
+                  ? 'One document'
+                  : 'Documents available'}
+            </span>
+          )}
         </div>
 
-        <div className="search-results-list">
-          {searchResults.map((result) => (
-            <Card className="search-result-card" key={result.id}>
-              <div className="search-result-icon">
-                <FiFileText size={18} />
-              </div>
+        {isLoading && (
+          <div className="search-results-empty">
+            <FiFileText size={24} />
 
-              <div className="search-result-content">
-                <div className="search-result-title-row">
-                  <h3>{result.title}</h3>
+            <h3>Loading documentation...</h3>
 
-                  <Badge variant="gray">{result.type}</Badge>
+            <p>Fetching your documentation from the workspace.</p>
+          </div>
+        )}
+
+        {!isLoading && !error && filteredDocuments.length === 0 && (
+          <div className="search-results-empty">
+            <FiFileText size={24} />
+
+            <h3>
+              {hasQuery ? 'No matching documentation' : 'No documentation yet'}
+            </h3>
+
+            <p>
+              {hasQuery
+                ? 'Try another search or use a different question.'
+                : 'Create a document to start building your knowledge base.'}
+            </p>
+          </div>
+        )}
+
+        {!isLoading && !error && filteredDocuments.length > 0 && (
+          <div className="search-results-list">
+            {filteredDocuments.map((document) => (
+              <Card
+                className="search-result-card"
+                key={document.id}
+                onClick={() => handleOpenDocument(document.id)}>
+                <div className="search-result-icon">
+                  <FiFileText size={18} />
                 </div>
 
-                <p>{result.description}</p>
+                <div className="search-result-content">
+                  <div className="search-result-title-row">
+                    <h3>{document.title}</h3>
 
-                <div className="search-result-meta">
-                  <span>
-                    <FiBookOpen size={12} />
-                    {result.category}
-                  </span>
+                    {document.category && (
+                      <Badge variant="gray">{document.category}</Badge>
+                    )}
+                  </div>
 
-                  <span className="search-result-separator">•</span>
+                  <p>{getDescription(document)}</p>
 
-                  <span>
-                    <FiClock size={12} />
-                    {result.updated}
-                  </span>
+                  <div className="search-result-meta">
+                    {document.category && (
+                      <>
+                        <span>
+                          <FiBookOpen size={12} />
+                          {document.category}
+                        </span>
+
+                        <span className="search-result-separator">•</span>
+                      </>
+                    )}
+
+                    <span>
+                      <FiClock size={12} />
+                      {formatUpdatedDate(document.updatedAt)}
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              <button className="search-result-arrow" title="Open document">
-                <FiArrowRight size={16} />
-              </button>
-            </Card>
-          ))}
-        </div>
+                <button
+                  type="button"
+                  className="search-result-arrow"
+                  title="Open document"
+                  aria-label={`Open ${document.title}`}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleOpenDocument(document.id);
+                  }}>
+                  <FiArrowRight size={16} />
+                </button>
+              </Card>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );
