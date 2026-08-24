@@ -28,6 +28,8 @@ export const getSettings = async (_req: Request, res: Response) => {
 export const updateSettings = async (req: Request, res: Response) => {
   try {
     const {
+      name,
+      email,
       theme,
       emailNotifications,
       documentationUpdates,
@@ -37,6 +39,8 @@ export const updateSettings = async (req: Request, res: Response) => {
     } = req.body;
 
     const settings = await updateUserSettings(DEV_USER_ID, {
+      name,
+      email,
       theme,
       emailNotifications,
       documentationUpdates,

@@ -7,6 +7,8 @@ export const users = pgTable('users', {
 
   email: text('email').notNull().unique(),
 
+  role: text('role').notNull().default('Developer'),
+
   createdAt: timestamp('created_at', {
     withTimezone: true,
   })
