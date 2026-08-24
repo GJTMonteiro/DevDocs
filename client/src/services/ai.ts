@@ -4,6 +4,7 @@ export interface AIChatSource {
   id: string;
   title: string;
   category: string | null;
+  similarity: number;
 }
 
 export interface AIChatResponse {

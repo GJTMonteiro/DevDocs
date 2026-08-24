@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-
 import type { KeyboardEvent } from 'react';
 
 import {
@@ -26,10 +25,7 @@ import { Link } from 'react-router-dom';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 
-import {
-  askAI,
-  type AIChatSource,
-} from '../../services/ai';
+import { askAI, type AIChatSource } from '../../services/ai';
 
 import './AIAssistant.css';
 
@@ -47,38 +43,31 @@ interface Conversation {
   messages: ChatMessage[];
 }
 
+const STORAGE_KEY = 'devdocs-ai-conversations';
+
 const createMessageId = () =>
-  `${Date.now()}-${Math.random()
-    .toString(36)
-    .slice(2)}`;
+  `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
 const formatRelativeDate = (date: string) => {
   const updatedAt = new Date(date);
   const now = new Date();
 
-  const difference =
-    now.getTime() - updatedAt.getTime();
+  const difference = now.getTime() - updatedAt.getTime();
 
-  const minutes = Math.floor(
-    difference / (1000 * 60),
-  );
+  const minutes = Math.floor(difference / (1000 * 60));
 
   if (minutes < 1) {
     return 'Just now';
   }
 
   if (minutes < 60) {
-    return `${minutes} minute${
-      minutes === 1 ? '' : 's'
-    } ago`;
+    return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
   }
 
   const hours = Math.floor(minutes / 60);
 
   if (hours < 24) {
-    return `${hours} hour${
-      hours === 1 ? '' : 's'
-    } ago`;
+    return `${hours} hour${hours === 1 ? '' : 's'} ago`;
   }
 
   const days = Math.floor(hours / 24);
@@ -98,145 +87,164 @@ const createConversation = (): Conversation => ({
 });
 
 const AIAssistant = () => {
-  const [conversations, setConversations] =
-    useState<Conversation[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
 
-  const [activeConversationId, setActiveConversationId] =
-    useState<string | null>(null);
+  const [activeConversationId, setActiveConversationId] = useState<
+    string | null
+  >(null);
 
   const [input, setInput] = useState('');
 
-  const [isLoading, setIsLoading] =
-    useState(true);
+  const [isSending, setIsSending] = useState(false);
 
-  const [isSending, setIsSending] =
-    useState(false);
+  const [error, setError] = useState('');
 
-  const [error, setError] =
-    useState('');
-
-  const [copiedMessageId, setCopiedMessageId] =
-    useState<string | null>(null);
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
 
   const [feedback, setFeedback] = useState<
     Record<string, 'positive' | 'negative'>
   >({});
 
+  const [openConversationMenu, setOpenConversationMenu] = useState<
+    string | null
+  >(null);
+
+  const [editingConversationId, setEditingConversationId] = useState<
+    string | null
+  >(null);
+
+  const [editingTitle, setEditingTitle] = useState('');
+
+  const [deletingConversationId, setDeletingConversationId] = useState<
+    string | null
+  >(null);
+
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
   /*
-   * Conversation actions
+   * =========================================
+   * LOAD CONVERSATIONS
+   * =========================================
    */
-  const [openConversationMenu, setOpenConversationMenu] =
-    useState<string | null>(null);
-
-  const [editingConversationId, setEditingConversationId] =
-    useState<string | null>(null);
-
-  const [editingTitle, setEditingTitle] =
-    useState('');
-
-  const [deletingConversationId, setDeletingConversationId] =
-    useState<string | null>(null);
 
   useEffect(() => {
-    const initialConversation =
-      createConversation();
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
 
-    setConversations([
-      initialConversation,
-    ]);
+      if (stored) {
+        const parsed = JSON.parse(stored) as Conversation[];
 
-    setActiveConversationId(
-      initialConversation.id,
-    );
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setConversations(parsed);
+          setActiveConversationId(parsed[0].id);
 
-    setIsLoading(false);
+          return;
+        }
+      }
+    } catch {
+      console.warn('Unable to restore AI conversations.');
+    }
+
+    const initialConversation = createConversation();
+
+    setConversations([initialConversation]);
+    setActiveConversationId(initialConversation.id);
   }, []);
+
+  /*
+   * =========================================
+   * SAVE CONVERSATIONS
+   * =========================================
+   */
+
+  useEffect(() => {
+    if (conversations.length === 0) {
+      return;
+    }
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations));
+    } catch {
+      console.warn('Unable to save AI conversations.');
+    }
+  }, [conversations]);
+
+  /*
+   * =========================================
+   * ACTIVE CONVERSATION
+   * =========================================
+   */
 
   const activeConversation = useMemo(
     () =>
       conversations.find(
-        (conversation) =>
-          conversation.id ===
-          activeConversationId,
+        (conversation) => conversation.id === activeConversationId,
       ) ?? null,
-    [
-      conversations,
-      activeConversationId,
-    ],
+    [conversations, activeConversationId],
   );
 
   /*
-   * Update conversation with a new message
+   * =========================================
+   * UPDATE CONVERSATION
+   * =========================================
    */
-  const updateConversation = (
-    conversationId: string,
-    message: ChatMessage,
-  ) => {
+
+  const updateConversation = (conversationId: string, message: ChatMessage) => {
     setConversations((current) =>
-      current.map((conversation) =>
-        conversation.id === conversationId
-          ? {
-              ...conversation,
+      current.map((conversation) => {
+        if (conversation.id !== conversationId) {
+          return conversation;
+        }
 
-              title:
-                conversation.messages.length === 0 &&
-                message.role === 'user'
-                  ? message.content.slice(0, 60) +
-                    (message.content.length > 60
-                      ? '...'
-                      : '')
-                  : conversation.title,
+        const isFirstUserMessage =
+          conversation.messages.length === 0 && message.role === 'user';
 
-              updatedAt:
-                new Date().toISOString(),
+        return {
+          ...conversation,
 
-              messages: [
-                ...conversation.messages,
-                message,
-              ],
-            }
-          : conversation,
-      ),
+          title: isFirstUserMessage
+            ? message.content.slice(0, 60) +
+              (message.content.length > 60 ? '...' : '')
+            : conversation.title,
+
+          updatedAt: new Date().toISOString(),
+
+          messages: [...conversation.messages, message],
+        };
+      }),
     );
   };
 
   /*
-   * Send message
+   * =========================================
+   * SEND MESSAGE
+   * =========================================
    */
-  const handleSend = async () => {
-    const trimmedInput =
-      input.trim();
 
-    if (
-      !trimmedInput ||
-      isSending ||
-      !activeConversationId
-    ) {
+  const handleSend = async () => {
+    const trimmedInput = input.trim();
+
+    if (!trimmedInput || isSending || !activeConversationId) {
       return;
     }
 
-    const conversationId =
-      activeConversationId;
+    const conversationId = activeConversationId;
+
+    const userMessage: ChatMessage = {
+      id: createMessageId(),
+      role: 'user',
+      content: trimmedInput,
+    };
+
+    setInput('');
+    setError('');
+
+    updateConversation(conversationId, userMessage);
 
     try {
       setIsSending(true);
-      setError('');
 
-      const userMessage: ChatMessage = {
-        id: createMessageId(),
-        role: 'user',
-        content: trimmedInput,
-      };
-
-      updateConversation(
-        conversationId,
-        userMessage,
-      );
-
-      setInput('');
-
-      const response =
-        await askAI(trimmedInput);
+      const response = await askAI(trimmedInput);
 
       const assistantMessage: ChatMessage = {
         id: createMessageId(),
@@ -245,15 +253,12 @@ const AIAssistant = () => {
         sources: response.sources,
       };
 
-      updateConversation(
-        conversationId,
-        assistantMessage,
-      );
+      updateConversation(conversationId, assistantMessage);
     } catch (error) {
       setError(
         error instanceof Error
           ? error.message
-          : 'Failed to send message.',
+          : 'Failed to communicate with DevDocs AI.',
       );
     } finally {
       setIsSending(false);
@@ -261,20 +266,21 @@ const AIAssistant = () => {
   };
 
   /*
-   * New conversation
+   * =========================================
+   * NEW CONVERSATION
+   * =========================================
    */
+
   const handleNewConversation = () => {
-    const conversation =
-      createConversation();
+    if (isSending) {
+      return;
+    }
 
-    setConversations((current) => [
-      conversation,
-      ...current,
-    ]);
+    const conversation = createConversation();
 
-    setActiveConversationId(
-      conversation.id,
-    );
+    setConversations((current) => [conversation, ...current]);
+
+    setActiveConversationId(conversation.id);
 
     setInput('');
     setError('');
@@ -282,14 +288,17 @@ const AIAssistant = () => {
   };
 
   /*
-   * Select conversation
+   * =========================================
+   * SELECT CONVERSATION
+   * =========================================
    */
-  const handleSelectConversation = (
-    conversationId: string,
-  ) => {
-    setActiveConversationId(
-      conversationId,
-    );
+
+  const handleSelectConversation = (conversationId: string) => {
+    if (isSending) {
+      return;
+    }
+
+    setActiveConversationId(conversationId);
 
     setInput('');
     setError('');
@@ -297,42 +306,28 @@ const AIAssistant = () => {
   };
 
   /*
-   * Open rename
+   * =========================================
+   * RENAME
+   * =========================================
    */
-  const handleStartRename = (
-    conversation: Conversation,
-  ) => {
-    setEditingConversationId(
-      conversation.id,
-    );
 
-    setEditingTitle(
-      conversation.title,
-    );
-
+  const handleStartRename = (conversation: Conversation) => {
+    setEditingConversationId(conversation.id);
+    setEditingTitle(conversation.title);
     setOpenConversationMenu(null);
   };
 
-  /*
-   * Cancel rename
-   */
   const handleCancelRename = () => {
     setEditingConversationId(null);
     setEditingTitle('');
   };
 
-  /*
-   * Save renamed conversation
-   */
   const handleSaveRename = () => {
-    if (
-      !editingConversationId
-    ) {
+    if (!editingConversationId) {
       return;
     }
 
-    const trimmedTitle =
-      editingTitle.trim();
+    const trimmedTitle = editingTitle.trim();
 
     if (!trimmedTitle) {
       return;
@@ -340,13 +335,11 @@ const AIAssistant = () => {
 
     setConversations((current) =>
       current.map((conversation) =>
-        conversation.id ===
-        editingConversationId
+        conversation.id === editingConversationId
           ? {
               ...conversation,
               title: trimmedTitle,
-              updatedAt:
-                new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
             }
           : conversation,
       ),
@@ -356,54 +349,33 @@ const AIAssistant = () => {
   };
 
   /*
-   * Delete conversation
+   * =========================================
+   * DELETE CONVERSATION
+   * =========================================
    */
+
   const handleDeleteConversation = () => {
-    if (
-      !deletingConversationId
-    ) {
+    if (!deletingConversationId) {
       return;
     }
 
-    const conversationId =
-      deletingConversationId;
+    const conversationId = deletingConversationId;
 
     setConversations((current) => {
-      const remaining =
-        current.filter(
-          (conversation) =>
-            conversation.id !==
-            conversationId,
-        );
+      const remaining = current.filter(
+        (conversation) => conversation.id !== conversationId,
+      );
 
-      /*
-       * Never leave the application
-       * without a conversation.
-       */
-      if (
-        remaining.length === 0
-      ) {
-        const newConversation =
-          createConversation();
+      if (remaining.length === 0) {
+        const newConversation = createConversation();
 
-        setActiveConversationId(
-          newConversation.id,
-        );
+        setActiveConversationId(newConversation.id);
 
         return [newConversation];
       }
 
-      /*
-       * If the deleted conversation
-       * was active, select another one.
-       */
-      if (
-        activeConversationId ===
-        conversationId
-      ) {
-        setActiveConversationId(
-          remaining[0].id,
-        );
+      if (activeConversationId === conversationId) {
+        setActiveConversationId(remaining[0].id);
       }
 
       return remaining;
@@ -416,53 +388,44 @@ const AIAssistant = () => {
   };
 
   /*
-   * Suggestions
+   * =========================================
+   * SUGGESTIONS
+   * =========================================
    */
-  const handleSuggestion = (
-    suggestion: string,
-  ) => {
+
+  const handleSuggestion = (suggestion: string) => {
     setInput(suggestion);
   };
 
   /*
-   * Copy message
+   * =========================================
+   * COPY MESSAGE
+   * =========================================
    */
-  const handleCopy = async (
-    message: ChatMessage,
-  ) => {
+
+  const handleCopy = async (message: ChatMessage) => {
     try {
-      await navigator.clipboard.writeText(
-        message.content,
-      );
+      await navigator.clipboard.writeText(message.content);
 
-      setCopiedMessageId(
-        message.id,
-      );
+      setCopiedMessageId(message.id);
 
-      setTimeout(
-        () =>
-          setCopiedMessageId(null),
-        1500,
-      );
+      setTimeout(() => {
+        setCopiedMessageId(null);
+      }, 1500);
     } catch {
-      setError(
-        'Unable to copy the message.',
-      );
+      setError('Unable to copy the message.');
     }
   };
 
   /*
-   * Feedback
+   * =========================================
+   * FEEDBACK
+   * =========================================
    */
-  const handleFeedback = (
-    messageId: string,
-    type: 'positive' | 'negative',
-  ) => {
+
+  const handleFeedback = (messageId: string, type: 'positive' | 'negative') => {
     setFeedback((current) => {
-      if (
-        current[messageId] ===
-        type
-      ) {
+      if (current[messageId] === type) {
         const next = {
           ...current,
         };
@@ -480,26 +443,27 @@ const AIAssistant = () => {
   };
 
   /*
-   * Keyboard
+   * =========================================
+   * KEYBOARD
+   * =========================================
    */
-  const handleKeyDown = (
-    event: KeyboardEvent<HTMLTextAreaElement>,
-  ) => {
-    if (
-      event.key === 'Enter' &&
-      !event.shiftKey
-    ) {
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       handleSend();
     }
   };
 
+  /*
+   * =========================================
+   * RENDER
+   * =========================================
+   */
+
   return (
     <div className="ai-assistant">
-
-      {/* =========================================
-          HEADER
-      ========================================= */}
+      {/* HEADER */}
 
       <section className="ai-assistant-header">
         <div className="ai-assistant-title">
@@ -508,116 +472,74 @@ const AIAssistant = () => {
           </div>
 
           <div>
-            <p className="ai-assistant-eyebrow">
-              AI Assistant
-            </p>
+            <p className="ai-assistant-eyebrow">AI Assistant</p>
 
             <h1>DevDocs AI</h1>
           </div>
         </div>
 
         <div className="ai-assistant-header-actions">
-          <button
-            type="button"
-            disabled
-            title="AI settings will be available when the AI service is connected"
-          >
+          <button type="button" title="AI settings">
             <FiSettings size={16} />
             <span>Settings</span>
           </button>
 
           <button
             type="button"
-            title="Toggle sidebar"
-          >
+            title={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+            onClick={() => setSidebarOpen((current) => !current)}>
             <FiSidebar size={16} />
           </button>
         </div>
       </section>
 
-      {/* =========================================
-          ERROR
-      ========================================= */}
+      {/* ERROR */}
 
-      {error && (
-        <div className="ai-assistant-error">
-          {error}
-        </div>
-      )}
+      {error && <div className="ai-assistant-error">{error}</div>}
 
-      {/* =========================================
-          MAIN LAYOUT
-      ========================================= */}
+      {/* MAIN */}
 
-      <section className="ai-assistant-layout">
+      <section
+        className={`ai-assistant-layout ${
+          sidebarOpen ? '' : 'sidebar-hidden'
+        }`}>
+        {/* SIDEBAR */}
 
-        {/* =========================================
-            SIDEBAR
-        ========================================= */}
+        {sidebarOpen && (
+          <aside className="ai-assistant-sidebar">
+            <button
+              type="button"
+              className="new-conversation"
+              onClick={handleNewConversation}
+              disabled={isSending}>
+              <FiPlus size={15} />
 
-        <aside className="ai-assistant-sidebar">
+              <span>New conversation</span>
+            </button>
 
-          <button
-            type="button"
-            className="new-conversation"
-            onClick={
-              handleNewConversation
-            }
-          >
-            <FiPlus size={15} />
-            <span>
-              New conversation
-            </span>
-          </button>
+            <div className="conversation-section">
+              <span className="conversation-section-title">Recent</span>
 
-          <div className="conversation-section">
-            <span className="conversation-section-title">
-              Recent
-            </span>
-
-            <div className="conversation-list">
-
-              {conversations.map(
-                (conversation) => (
+              <div className="conversation-list">
+                {conversations.map((conversation) => (
                   <div
                     className={`conversation-item-wrapper ${
-                      conversation.id ===
-                      activeConversationId
-                        ? 'active'
-                        : ''
+                      conversation.id === activeConversationId ? 'active' : ''
                     }`}
-                    key={conversation.id}
-                  >
-
+                    key={conversation.id}>
                     <button
                       type="button"
                       className={`conversation-item ${
-                        conversation.id ===
-                        activeConversationId
-                          ? 'active'
-                          : ''
+                        conversation.id === activeConversationId ? 'active' : ''
                       }`}
-                      onClick={() =>
-                        handleSelectConversation(
-                          conversation.id,
-                        )
-                      }
-                    >
-                      <FiMessageSquare
-                        size={15}
-                      />
+                      onClick={() => handleSelectConversation(conversation.id)}>
+                      <FiMessageSquare size={15} />
 
                       <div>
-                        <span>
-                          {
-                            conversation.title
-                          }
-                        </span>
+                        <span>{conversation.title}</span>
 
                         <small>
-                          {formatRelativeDate(
-                            conversation.updatedAt,
-                          )}
+                          {formatRelativeDate(conversation.updatedAt)}
                         </small>
                       </div>
                     </button>
@@ -629,661 +551,406 @@ const AIAssistant = () => {
                       onClick={(event) => {
                         event.stopPropagation();
 
-                        setOpenConversationMenu(
-                          (
-                            current,
-                          ) =>
-                            current ===
-                            conversation.id
-                              ? null
-                              : conversation.id,
+                        setOpenConversationMenu((current) =>
+                          current === conversation.id ? null : conversation.id,
                         );
-                      }}
-                    >
-                      <FiChevronDown
-                        size={13}
-                      />
+                      }}>
+                      <FiChevronDown size={13} />
                     </button>
 
-                    {openConversationMenu ===
-                      conversation.id && (
+                    {openConversationMenu === conversation.id && (
                       <div className="conversation-menu">
-
                         <button
                           type="button"
-                          onClick={() =>
-                            handleStartRename(
-                              conversation,
-                            )
-                          }
-                        >
-                          <FiEdit2
-                            size={13}
-                          />
+                          onClick={() => handleStartRename(conversation)}>
+                          <FiEdit2 size={13} />
 
-                          <span>
-                            Rename
-                          </span>
+                          <span>Rename</span>
                         </button>
 
                         <button
                           type="button"
                           className="danger"
                           onClick={() => {
-                            setDeletingConversationId(
-                              conversation.id,
-                            );
+                            setDeletingConversationId(conversation.id);
+                            setOpenConversationMenu(null);
+                          }}>
+                          <FiTrash2 size={13} />
 
-                            setOpenConversationMenu(
-                              null,
-                            );
-                          }}
-                        >
-                          <FiTrash2
-                            size={13}
-                          />
-
-                          <span>
-                            Delete
-                          </span>
+                          <span>Delete</span>
                         </button>
-
                       </div>
                     )}
-
                   </div>
-                ),
-              )}
-
+                ))}
+              </div>
             </div>
-          </div>
-        </aside>
+          </aside>
+        )}
 
-        {/* =========================================
-            CHAT
-        ========================================= */}
+        {/* CHAT */}
 
         <main className="ai-chat">
-
           <div className="ai-chat-messages">
-
-            {!activeConversation ||
-            activeConversation.messages.length ===
-              0 ? (
+            {!activeConversation || activeConversation.messages.length === 0 ? (
               <div className="ai-welcome">
-
                 <div className="ai-welcome-icon">
                   <FiZap size={22} />
                 </div>
 
-                <h2>
-                  How can I help?
-                </h2>
+                <h2>How can I help?</h2>
 
                 <p>
-                  Ask questions about your
-                  documentation, codebase,
-                  architecture or internal
-                  processes.
+                  Ask questions about your documentation, codebase, architecture
+                  or internal processes.
                 </p>
 
                 <div className="ai-capabilities">
-
                   <button
                     type="button"
                     onClick={() =>
-                      handleSuggestion(
-                        'Search the documentation for this topic',
-                      )
-                    }
-                  >
-                    <FiBookOpen
-                      size={15}
-                    />
+                      handleSuggestion('How does authentication work?')
+                    }>
+                    <FiBookOpen size={15} />
 
-                    <span>
-                      Search documentation
-                    </span>
+                    <span>Ask about authentication</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() =>
                       handleSuggestion(
-                        'Explain the most relevant document',
+                        'What is the most relevant documentation for this topic?',
                       )
-                    }
-                  >
-                    <FiFileText
-                      size={15}
-                    />
+                    }>
+                    <FiFileText size={15} />
 
-                    <span>
-                      Explain a document
-                    </span>
+                    <span>Find relevant documentation</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() =>
                       handleSuggestion(
-                        'Help me write documentation about this topic',
+                        'Explain the relevant documentation for this topic.',
                       )
-                    }
-                  >
-                    <FiZap
-                      size={15}
-                    />
+                    }>
+                    <FiZap size={15} />
 
-                    <span>
-                      Help me write documentation
-                    </span>
+                    <span>Explain documentation</span>
                   </button>
-
                 </div>
               </div>
             ) : (
-              activeConversation.messages.map(
-                (message) => (
+              activeConversation.messages.map((message) => (
+                <div
+                  className={`chat-message ${
+                    message.role === 'user' ? 'user-message' : 'ai-message'
+                  }`}
+                  key={message.id}>
                   <div
-                    className={`chat-message ${
-                      message.role ===
-                      'user'
-                        ? 'user-message'
-                        : 'ai-message'
-                    }`}
-                    key={message.id}
-                  >
-                    <div
-                      className={`chat-avatar ${
-                        message.role ===
-                        'user'
-                          ? 'user'
-                          : 'ai'
-                      }`}
-                    >
-                      {message.role ===
-                      'user' ? (
-                        'You'
-                      ) : (
-                        <FiZap size={15} />
-                      )}
-                    </div>
-
-                    <div className="chat-message-content">
-
-                      <div className="chat-message-author-row">
-                        <span className="chat-message-author">
-                          {message.role ===
-                          'user'
-                            ? 'You'
-                            : 'DevDocs AI'}
-                        </span>
-
-                        {message.role ===
-                          'assistant' && (
-                          <Badge variant="blue">
-                            AI
-                          </Badge>
-                        )}
-                      </div>
-
-                      <div className="chat-answer">
-
-                        {message.content
-                          .split('\n\n')
-                          .map(
-                            (
-                              paragraph,
-                              index,
-                            ) => (
-                              <p
-                                key={`${message.id}-${index}`}
-                              >
-                                {paragraph}
-                              </p>
-                            ),
-                          )}
-
-                        {message.role ===
-                          'assistant' &&
-                          message.sources &&
-                          message.sources.length >
-                            0 && (
-                            <div className="chat-source-box">
-
-                              <div className="chat-source-header">
-                                <span>
-                                  Sources
-                                </span>
-
-                                <span>
-                                  Documentation
-                                </span>
-                              </div>
-
-                              {message.sources.map(
-                                (source) => (
-                                  <Link
-                                    to={`/documentation/${source.id}`}
-                                    className="chat-source"
-                                    key={source.id}
-                                  >
-                                    <FiFileText
-                                      size={14}
-                                    />
-
-                                    <span>
-                                      {
-                                        source.title
-                                      }
-                                    </span>
-                                  </Link>
-                                ),
-                              )}
-
-                            </div>
-                          )}
-
-                      </div>
-
-                      {message.role ===
-                        'assistant' && (
-                        <div className="chat-message-actions">
-
-                          <button
-                            type="button"
-                            title={
-                              copiedMessageId ===
-                              message.id
-                                ? 'Copied'
-                                : 'Copy'
-                            }
-                            onClick={() =>
-                              handleCopy(
-                                message,
-                              )
-                            }
-                          >
-                            <FiCopy
-                              size={13}
-                            />
-                          </button>
-
-                          <button
-                            type="button"
-                            title="Helpful"
-                            className={
-                              feedback[
-                                message.id
-                              ] ===
-                              'positive'
-                                ? 'active'
-                                : ''
-                            }
-                            onClick={() =>
-                              handleFeedback(
-                                message.id,
-                                'positive',
-                              )
-                            }
-                          >
-                            <FiThumbsUp
-                              size={13}
-                            />
-                          </button>
-
-                          <button
-                            type="button"
-                            title="Not helpful"
-                            className={
-                              feedback[
-                                message.id
-                              ] ===
-                              'negative'
-                                ? 'active'
-                                : ''
-                            }
-                            onClick={() =>
-                              handleFeedback(
-                                message.id,
-                                'negative',
-                              )
-                            }
-                          >
-                            <FiThumbsDown
-                              size={13}
-                            />
-                          </button>
-
-                        </div>
-                      )}
-
-                    </div>
+                    className={`chat-avatar ${
+                      message.role === 'user' ? 'user' : 'ai'
+                    }`}>
+                    {message.role === 'user' ? 'You' : <FiZap size={15} />}
                   </div>
-                ),
-              )
+
+                  <div className="chat-message-content">
+                    <div className="chat-message-author-row">
+                      <span className="chat-message-author">
+                        {message.role === 'user' ? 'You' : 'DevDocs AI'}
+                      </span>
+
+                      {message.role === 'assistant' && (
+                        <Badge variant="blue">AI</Badge>
+                      )}
+                    </div>
+
+                    <div className="chat-answer">
+                      {message.content.split('\n\n').map((paragraph, index) => (
+                        <p key={`${message.id}-${index}`}>{paragraph}</p>
+                      ))}
+
+                      {/* SOURCES */}
+
+                      {message.role === 'assistant' &&
+                        message.sources &&
+                        message.sources.length > 0 && (
+                          <div className="chat-source-box">
+                            <div className="chat-source-header">
+                              <span>Sources</span>
+
+                              <span>
+                                {message.sources.length} document
+                                {message.sources.length === 1 ? '' : 's'}
+                              </span>
+                            </div>
+
+                            {message.sources.map((source) => (
+                              <Link
+                                to={`/documentation/${source.id}`}
+                                className="chat-source"
+                                key={source.id}>
+                                <FiFileText size={14} />
+
+                                <span className="chat-source-info">
+                                  <span className="chat-source-title">
+                                    {source.title}
+                                  </span>
+
+                                  {source.category && (
+                                    <small>{source.category}</small>
+                                  )}
+                                </span>
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+
+                      {message.role === 'assistant' &&
+                        (!message.sources || message.sources.length === 0) && (
+                          <div className="chat-no-sources">
+                            <FiBookOpen size={14} />
+
+                            <span>
+                              No relevant documentation sources were found.
+                            </span>
+                          </div>
+                        )}
+                    </div>
+
+                    {message.role === 'assistant' && (
+                      <div className="chat-message-actions">
+                        <button
+                          type="button"
+                          title={
+                            copiedMessageId === message.id ? 'Copied' : 'Copy'
+                          }
+                          onClick={() => handleCopy(message)}>
+                          <FiCopy size={13} />
+                        </button>
+
+                        <button
+                          type="button"
+                          title="Helpful"
+                          className={
+                            feedback[message.id] === 'positive' ? 'active' : ''
+                          }
+                          onClick={() =>
+                            handleFeedback(message.id, 'positive')
+                          }>
+                          <FiThumbsUp size={13} />
+                        </button>
+
+                        <button
+                          type="button"
+                          title="Not helpful"
+                          className={
+                            feedback[message.id] === 'negative' ? 'active' : ''
+                          }
+                          onClick={() =>
+                            handleFeedback(message.id, 'negative')
+                          }>
+                          <FiThumbsDown size={13} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
             )}
+
+            {/* LOADING */}
 
             {isSending && (
               <div className="chat-message ai-message">
-
                 <div className="chat-avatar ai">
                   <FiZap size={15} />
                 </div>
 
                 <div className="chat-message-content">
-
                   <div className="chat-message-author-row">
-                    <span className="chat-message-author">
-                      DevDocs AI
-                    </span>
+                    <span className="chat-message-author">DevDocs AI</span>
 
-                    <Badge variant="blue">
-                      AI
-                    </Badge>
+                    <Badge variant="blue">AI</Badge>
                   </div>
 
                   <div className="chat-answer">
-                    <p>
-                      Searching your
-                      documentation...
-                    </p>
+                    <p>Searching your documentation...</p>
                   </div>
-
                 </div>
               </div>
             )}
-
           </div>
 
-          {/* =========================================
-              INPUT
-          ========================================= */}
+          {/* INPUT */}
 
           <div className="ai-chat-input-area">
-
             <Card className="ai-chat-input">
-
               <textarea
                 placeholder="Ask anything about your documentation..."
                 rows={2}
                 value={input}
-                onChange={(event) =>
-                  setInput(
-                    event.target.value,
-                  )
-                }
-                onKeyDown={
-                  handleKeyDown
-                }
-                disabled={
-                  isLoading ||
-                  isSending
-                }
+                onChange={(event) => setInput(event.target.value)}
+                onKeyDown={handleKeyDown}
+                disabled={isSending}
               />
 
               <div className="ai-chat-input-footer">
-
                 <div className="ai-chat-tools">
-
                   <button
                     type="button"
                     disabled
-                    title="Attachments will be available with the AI service"
-                  >
-                    <FiPlus
-                      size={15}
-                    />
+                    title="Attachments are not available yet">
+                    <FiPlus size={15} />
                   </button>
 
-                  <button type="button">
-                    <FiBookOpen
-                      size={15}
-                    />
+                  <button type="button" title="Documentation context">
+                    <FiBookOpen size={15} />
 
-                    <span>
-                      Documentation
-                    </span>
+                    <span>Documentation</span>
                   </button>
 
-                  <button
-                    type="button"
-                    title="Select context"
-                  >
-                    <FiChevronDown
-                      size={13}
-                    />
+                  <button type="button" title="Select context">
+                    <FiChevronDown size={13} />
                   </button>
-
                 </div>
 
                 <button
                   type="button"
                   className="ai-send"
                   title="Send message"
-                  disabled={
-                    !input.trim() ||
-                    isLoading ||
-                    isSending
-                  }
-                  onClick={
-                    handleSend
-                  }
-                >
+                  disabled={!input.trim() || isSending}
+                  onClick={handleSend}>
                   <FiSend size={15} />
                 </button>
-
               </div>
-
             </Card>
 
             <p className="ai-chat-disclaimer">
-              DevDocs AI uses your
-              documentation as context.
-              Always verify important
-              information.
+              DevDocs AI uses your documentation as context. Always verify
+              important information.
             </p>
-
           </div>
-
         </main>
       </section>
 
-      {/* =========================================
-          RENAME MODAL
-      ========================================= */}
+      {/* RENAME MODAL */}
 
       {editingConversationId && (
-        <div
-          className="ai-modal-overlay"
-          onClick={
-            handleCancelRename
-          }
-        >
+        <div className="ai-modal-overlay" onClick={handleCancelRename}>
           <div
             className="ai-modal"
-            onClick={(event) =>
-              event.stopPropagation()
-            }
-          >
+            onClick={(event) => event.stopPropagation()}>
             <div className="ai-modal-header">
               <div>
-                <span className="ai-modal-eyebrow">
-                  Conversation
-                </span>
+                <span className="ai-modal-eyebrow">Conversation</span>
 
-                <h2>
-                  Rename conversation
-                </h2>
+                <h2>Rename conversation</h2>
               </div>
 
               <button
                 type="button"
                 className="ai-modal-close"
-                onClick={
-                  handleCancelRename
-                }
-              >
+                onClick={handleCancelRename}>
                 <FiX size={17} />
               </button>
             </div>
 
             <div className="ai-modal-body">
-
-              <label
-                htmlFor="conversation-title"
-              >
-                Conversation name
-              </label>
+              <label htmlFor="conversation-title">Conversation name</label>
 
               <input
                 id="conversation-title"
                 type="text"
                 value={editingTitle}
-                onChange={(event) =>
-                  setEditingTitle(
-                    event.target.value,
-                  )
-                }
+                onChange={(event) => setEditingTitle(event.target.value)}
                 onKeyDown={(event) => {
-                  if (
-                    event.key ===
-                    'Enter'
-                  ) {
+                  if (event.key === 'Enter') {
                     event.preventDefault();
                     handleSaveRename();
                   }
 
-                  if (
-                    event.key ===
-                    'Escape'
-                  ) {
+                  if (event.key === 'Escape') {
                     handleCancelRename();
                   }
                 }}
                 autoFocus
                 maxLength={100}
               />
-
             </div>
 
             <div className="ai-modal-footer">
-
               <button
                 type="button"
                 className="ai-modal-button secondary"
-                onClick={
-                  handleCancelRename
-                }
-              >
+                onClick={handleCancelRename}>
                 Cancel
               </button>
 
               <button
                 type="button"
                 className="ai-modal-button primary"
-                disabled={
-                  !editingTitle.trim()
-                }
-                onClick={
-                  handleSaveRename
-                }
-              >
+                disabled={!editingTitle.trim()}
+                onClick={handleSaveRename}>
                 <FiCheck size={14} />
                 Save
               </button>
-
             </div>
           </div>
         </div>
       )}
 
-      {/* =========================================
-          DELETE MODAL
-      ========================================= */}
+      {/* DELETE MODAL */}
 
       {deletingConversationId && (
         <div
           className="ai-modal-overlay"
-          onClick={() =>
-            setDeletingConversationId(
-              null,
-            )
-          }
-        >
+          onClick={() => setDeletingConversationId(null)}>
           <div
             className="ai-modal"
-            onClick={(event) =>
-              event.stopPropagation()
-            }
-          >
+            onClick={(event) => event.stopPropagation()}>
             <div className="ai-modal-header">
-
               <div>
-                <span className="ai-modal-eyebrow danger">
-                  Danger zone
-                </span>
+                <span className="ai-modal-eyebrow danger">Danger zone</span>
 
-                <h2>
-                  Delete conversation?
-                </h2>
+                <h2>Delete conversation?</h2>
               </div>
 
               <button
                 type="button"
                 className="ai-modal-close"
-                onClick={() =>
-                  setDeletingConversationId(
-                    null,
-                  )
-                }
-              >
+                onClick={() => setDeletingConversationId(null)}>
                 <FiX size={17} />
               </button>
-
             </div>
 
             <div className="ai-modal-body">
-
               <p className="ai-delete-description">
-                This conversation and all
-                of its messages will be
-                permanently removed.
+                This conversation and all of its messages will be permanently
+                removed.
               </p>
-
             </div>
 
             <div className="ai-modal-footer">
-
               <button
                 type="button"
                 className="ai-modal-button secondary"
-                onClick={() =>
-                  setDeletingConversationId(
-                    null,
-                  )
-                }
-              >
+                onClick={() => setDeletingConversationId(null)}>
                 Cancel
               </button>
 
               <button
                 type="button"
                 className="ai-modal-button danger"
-                onClick={
-                  handleDeleteConversation
-                }
-              >
+                onClick={handleDeleteConversation}>
                 <FiTrash2 size={14} />
                 Delete
               </button>
-
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 };
