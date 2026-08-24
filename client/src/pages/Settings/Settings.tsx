@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   FiBell,
@@ -6,7 +6,6 @@ import {
   FiChevronRight,
   FiLock,
   FiMonitor,
-  FiSave,
   FiShield,
   FiUser,
   FiX,
@@ -14,6 +13,7 @@ import {
 
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
+
 import { useTheme } from '../../context/ThemeContext';
 import { useUser } from '../../context/UserContext';
 
@@ -43,10 +43,6 @@ const DEFAULT_SETTINGS: SettingsState = {
   aiAssistant: true,
   contextAwareResponses: true,
 };
-
-/* =========================================
-   ROLE OPTIONS
-   ========================================= */
 
 const ROLE_OPTIONS = [
   'Developer',
@@ -98,18 +94,11 @@ const ROLE_OPTIONS = [
   'Other',
 ];
 
-/* =========================================
-   SETTINGS
-   ========================================= */
-
 const Settings = () => {
   const { setTheme } = useTheme();
   const { user, updateUser } = useUser();
 
   const [settings, setSettings] = useState<SettingsState>(DEFAULT_SETTINGS);
-
-  const [savedSettings, setSavedSettings] =
-    useState<SettingsState>(DEFAULT_SETTINGS);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -126,9 +115,11 @@ const Settings = () => {
 
   const [showSavedMessage, setShowSavedMessage] = useState(false);
 
-  /* =========================================
-     LOAD SETTINGS
-     ========================================= */
+  /*
+   * =========================================
+   * LOAD SETTINGS
+   * =========================================
+   */
 
   useEffect(() => {
     let isMounted = true;
@@ -154,7 +145,6 @@ const Settings = () => {
         };
 
         setSettings(loadedSettings);
-        setSavedSettings(loadedSettings);
         setTheme(loadedSettings.theme);
       } catch (err) {
         console.error('Failed to load settings:', err);
@@ -176,24 +166,13 @@ const Settings = () => {
     };
   }, [setTheme]);
 
-  /* =========================================
-     CHANGE DETECTION
-     ========================================= */
-
-  const hasChanges = useMemo(() => {
-    return (
-      settings.theme !== savedSettings.theme ||
-      settings.emailNotifications !== savedSettings.emailNotifications ||
-      settings.documentationUpdates !== savedSettings.documentationUpdates ||
-      settings.mentions !== savedSettings.mentions ||
-      settings.aiAssistant !== savedSettings.aiAssistant ||
-      settings.contextAwareResponses !== savedSettings.contextAwareResponses
-    );
-  }, [settings, savedSettings]);
-
-  /* =========================================
-     UPDATE LOCAL STATE
-     ========================================= */
+  /*
+   * =========================================
+   * UPDATE SETTING
+   * =========================================
+   *
+   * Every setting is saved immediately.
+   */
 
   const updateSetting = async <K extends keyof SettingsState>(
     key: K,
@@ -202,102 +181,48 @@ const Settings = () => {
     setError(null);
     setShowSavedMessage(false);
 
-    /*
-     * Theme is persisted immediately.
-     */
+    const previousSettings = settings;
 
-    if (key === 'theme') {
-      const newTheme = value as SettingsState['theme'];
-      const previousTheme = savedSettings.theme;
-
-      setSettings((current) => ({
-        ...current,
-        theme: newTheme,
-      }));
-
-      setTheme(newTheme);
-
-      try {
-        const updated = await updateSettingsApi({
-          theme: newTheme,
-        });
-
-        setSettings((current) => ({
-          ...current,
-          theme: updated.theme,
-        }));
-
-        setSavedSettings((current) => ({
-          ...current,
-          theme: updated.theme,
-        }));
-
-        setTheme(updated.theme);
-      } catch (err) {
-        console.error('Failed to save theme:', err);
-
-        setError('Unable to save your theme preference.');
-
-        setSettings((current) => ({
-          ...current,
-          theme: previousTheme,
-        }));
-
-        setTheme(previousTheme);
-      }
-
-      return;
-    }
-
-    /*
-     * Other settings are saved when
-     * the user clicks Save changes.
-     */
-
-    setSettings((current) => ({
-      ...current,
+    let newSettings: SettingsState = {
+      ...settings,
       [key]: value,
-    }));
+    };
 
     /*
      * If AI Assistant is disabled,
-     * context-aware responses are also disabled.
+     * Context-aware responses are also disabled.
      */
-
     if (key === 'aiAssistant' && value === false) {
-      setSettings((current) => ({
-        ...current,
+      newSettings = {
+        ...newSettings,
         aiAssistant: false,
         contextAwareResponses: false,
-      }));
+      };
     }
-  };
 
-  /* =========================================
-     SAVE SETTINGS
-     ========================================= */
+    setSettings(newSettings);
 
-  const handleSaveChanges = async () => {
-    if (!hasChanges || isSaving) {
-      return;
+    /*
+     * Theme is also applied immediately.
+     */
+    if (key === 'theme') {
+      setTheme(value as SettingsState['theme']);
     }
 
     try {
       setIsSaving(true);
-      setError(null);
-      setShowSavedMessage(false);
 
       const updated = await updateSettingsApi({
-        theme: settings.theme,
-        emailNotifications: settings.emailNotifications,
-        documentationUpdates: settings.documentationUpdates,
-        mentions: settings.mentions,
-        aiAssistant: settings.aiAssistant,
-        contextAwareResponses: settings.contextAwareResponses,
+        theme: newSettings.theme,
+        emailNotifications: newSettings.emailNotifications,
+        documentationUpdates: newSettings.documentationUpdates,
+        mentions: newSettings.mentions,
+        aiAssistant: newSettings.aiAssistant,
+        contextAwareResponses: newSettings.contextAwareResponses,
       });
 
       const updatedSettings: SettingsState = {
-        ...settings,
+        ...newSettings,
         theme: updated.theme,
         emailNotifications: updated.emailNotifications,
         documentationUpdates: updated.documentationUpdates,
@@ -307,48 +232,33 @@ const Settings = () => {
       };
 
       setSettings(updatedSettings);
-      setSavedSettings(updatedSettings);
       setTheme(updated.theme);
+
       setShowSavedMessage(true);
 
       window.setTimeout(() => {
         setShowSavedMessage(false);
-      }, 2500);
+      }, 2000);
     } catch (err) {
-      console.error('Failed to save settings:', err);
+      console.error('Failed to save setting:', err);
 
-      setError('Unable to save your settings. Please try again.');
+      setSettings(previousSettings);
+
+      if (key === 'theme') {
+        setTheme(previousSettings.theme);
+      }
+
+      setError('Unable to save your setting. Please try again.');
     } finally {
       setIsSaving(false);
     }
   };
 
-  /* =========================================
-     CANCEL CHANGES
-     ========================================= */
-
-  const handleCancelChanges = () => {
-    if (!hasChanges) {
-      return;
-    }
-
-    const shouldCancel = window.confirm(
-      'You have unsaved changes. Are you sure you want to discard them?',
-    );
-
-    if (!shouldCancel) {
-      return;
-    }
-
-    setSettings(savedSettings);
-    setTheme(savedSettings.theme);
-    setShowSavedMessage(false);
-    setError(null);
-  };
-
-  /* =========================================
-     PROFILE
-     ========================================= */
+  /*
+   * =========================================
+   * PROFILE
+   * =========================================
+   */
 
   const handleOpenProfile = () => {
     if (!user) {
@@ -379,16 +289,7 @@ const Settings = () => {
       setError(null);
       setShowSavedMessage(false);
 
-      /*
-       * Update profile through the profile service.
-       */
-
       const updatedProfile = await updateProfile(name, email, role);
-
-      /*
-       * Update the global UserContext only
-       * after the API succeeds.
-       */
 
       updateUser({
         name: updatedProfile.name,
@@ -403,6 +304,7 @@ const Settings = () => {
       });
 
       setIsProfileModalOpen(false);
+
       setShowSavedMessage(true);
 
       window.setTimeout(() => {
@@ -417,17 +319,21 @@ const Settings = () => {
     }
   };
 
-  /* =========================================
-     SECURITY
-     ========================================= */
+  /*
+   * =========================================
+   * SECURITY
+   * =========================================
+   */
 
   const handleOpenSecurity = () => {
     setIsSecurityModalOpen(true);
   };
 
-  /* =========================================
-     USER DISPLAY DATA
-     ========================================= */
+  /*
+   * =========================================
+   * USER DISPLAY DATA
+   * =========================================
+   */
 
   const displayName = user?.name ?? 'Loading...';
   const displayEmail = user?.email ?? 'Loading...';
@@ -443,21 +349,23 @@ const Settings = () => {
         .toUpperCase()
     : '--';
 
-  /* =========================================
-     LOADING STATE
-     ========================================= */
+  /*
+   * =========================================
+   * LOADING STATE
+   * =========================================
+   */
 
   if (isLoading) {
     return (
       <div className="settings">
         <section className="settings-header">
           <div>
-            <p className="settings-eyebrow">Workspace</p>
+            <p className="settings-eyebrow">Preferences</p>
 
             <h1>Settings</h1>
 
             <p className="settings-description">
-              Manage your account, preferences and workspace settings.
+              Manage your account and application preferences.
             </p>
           </div>
         </section>
@@ -469,9 +377,11 @@ const Settings = () => {
     );
   }
 
-  /* =========================================
-     PAGE
-     ========================================= */
+  /*
+   * =========================================
+   * PAGE
+   * =========================================
+   */
 
   return (
     <div className="settings">
@@ -479,14 +389,21 @@ const Settings = () => {
 
       <section className="settings-header">
         <div>
-          <p className="settings-eyebrow">Workspace</p>
+          <p className="settings-eyebrow">Preferences</p>
 
           <h1>Settings</h1>
 
           <p className="settings-description">
-            Manage your account, preferences and workspace settings.
+            Manage your account and application preferences.
           </p>
         </div>
+
+        {showSavedMessage && (
+          <span className="settings-saved-message">
+            <FiCheck size={14} />
+            Changes saved
+          </span>
+        )}
       </section>
 
       {/* ERROR */}
@@ -504,300 +421,271 @@ const Settings = () => {
         </div>
       )}
 
-      {/* ACCOUNT */}
+      {/* MAIN */}
 
-      <section className="settings-section">
-        <div className="settings-section-header">
-          <div>
-            <h2>Account</h2>
+      <section className="settings-grid">
+        <div className="settings-main">
+          {/* ACCOUNT */}
 
-            <p>Manage your personal account information.</p>
-          </div>
-        </div>
+          <Card className="settings-card">
+            <div className="section-header">
+              <div>
+                <h2>Account</h2>
 
-        <Card className="settings-card">
-          <div className="settings-profile">
-            <div className="settings-avatar">{initials}</div>
-
-            <div className="settings-profile-info">
-              <h3>{displayName}</h3>
-
-              <p>{displayEmail}</p>
-
-              <span>{displayRole}</span>
+                <p>Manage your personal account information.</p>
+              </div>
             </div>
 
-            <Button
-              variant="secondary"
+            <div className="settings-profile">
+              <div className="settings-avatar">{initials}</div>
+
+              <div className="settings-profile-info">
+                <h3>{displayName}</h3>
+
+                <p>{displayEmail}</p>
+
+                <span>{displayRole}</span>
+              </div>
+
+              <Button
+                variant="secondary"
+                onClick={handleOpenProfile}
+                disabled={!user}>
+                Edit profile
+              </Button>
+            </div>
+
+            <div className="settings-divider" />
+
+            <button
+              type="button"
+              className="settings-row settings-row-button"
               onClick={handleOpenProfile}
               disabled={!user}>
-              Edit profile
-            </Button>
-          </div>
+              <div className="settings-row-icon blue">
+                <FiUser size={18} />
+              </div>
 
-          <div className="settings-divider" />
+              <div className="settings-row-content">
+                <strong>Personal information</strong>
 
-          <button
-            type="button"
-            className="settings-row settings-row-button"
-            onClick={handleOpenProfile}
-            disabled={!user}>
-            <div className="settings-row-icon blue">
-              <FiUser size={18} />
+                <span>Update your name, email and profile information.</span>
+              </div>
+
+              <FiChevronRight className="settings-row-arrow" size={17} />
+            </button>
+
+            <button
+              type="button"
+              className="settings-row settings-row-button"
+              onClick={handleOpenSecurity}>
+              <div className="settings-row-icon purple">
+                <FiLock size={18} />
+              </div>
+
+              <div className="settings-row-content">
+                <strong>Password & security</strong>
+
+                <span>Manage your password and account security.</span>
+              </div>
+
+              <FiChevronRight className="settings-row-arrow" size={17} />
+            </button>
+          </Card>
+
+          {/* APPEARANCE */}
+
+          <Card className="settings-card">
+            <div className="section-header">
+              <div>
+                <h2>Appearance</h2>
+
+                <p>Customize how DevDocs looks on your device.</p>
+              </div>
             </div>
 
-            <div className="settings-row-content">
-              <strong>Personal information</strong>
+            <div className="settings-row">
+              <div className="settings-row-icon gray">
+                <FiMonitor size={18} />
+              </div>
 
-              <span>Update your name, email and profile information.</span>
-            </div>
+              <div className="settings-row-content">
+                <strong>Theme</strong>
 
-            <FiChevronRight className="settings-row-arrow" size={17} />
-          </button>
+                <span>Choose how DevDocs appears across your application.</span>
+              </div>
 
-          <button
-            type="button"
-            className="settings-row settings-row-button"
-            onClick={handleOpenSecurity}>
-            <div className="settings-row-icon purple">
-              <FiLock size={18} />
-            </div>
-
-            <div className="settings-row-content">
-              <strong>Password & security</strong>
-
-              <span>Manage your password and account security.</span>
-            </div>
-
-            <FiChevronRight className="settings-row-arrow" size={17} />
-          </button>
-        </Card>
-      </section>
-
-      {/* APPEARANCE */}
-
-      <section className="settings-section">
-        <div className="settings-section-header">
-          <div>
-            <h2>Appearance</h2>
-
-            <p>Customize how DevDocs looks on your device.</p>
-          </div>
-        </div>
-
-        <Card className="settings-card">
-          <div className="settings-row">
-            <div className="settings-row-icon gray">
-              <FiMonitor size={18} />
-            </div>
-
-            <div className="settings-row-content">
-              <strong>Theme</strong>
-
-              <span>Choose how DevDocs appears across your workspace.</span>
-            </div>
-
-            <select
-              className="settings-native-select"
-              value={settings.theme}
-              onChange={(event) =>
-                updateSetting(
-                  'theme',
-                  event.target.value as SettingsState['theme'],
-                )
-              }>
-              <option value="dark">Dark</option>
-              <option value="light">Light</option>
-              <option value="system">System</option>
-            </select>
-          </div>
-        </Card>
-      </section>
-
-      {/* NOTIFICATIONS */}
-
-      <section className="settings-section">
-        <div className="settings-section-header">
-          <div>
-            <h2>Notifications</h2>
-
-            <p>Control which notifications you receive.</p>
-          </div>
-        </div>
-
-        <Card className="settings-card">
-          {/* EMAIL NOTIFICATIONS */}
-
-          <div className="settings-row">
-            <div className="settings-row-icon yellow">
-              <FiBell size={18} />
-            </div>
-
-            <div className="settings-row-content">
-              <strong>Email notifications</strong>
-
-              <span>Receive updates about your workspace by email.</span>
-            </div>
-
-            <label className="settings-toggle">
-              <input
-                type="checkbox"
-                checked={settings.emailNotifications}
+              <select
+                className="settings-native-select"
+                value={settings.theme}
                 onChange={(event) =>
-                  updateSetting('emailNotifications', event.target.checked)
+                  updateSetting(
+                    'theme',
+                    event.target.value as SettingsState['theme'],
+                  )
                 }
-              />
+                disabled={isSaving}>
+                <option value="dark">Dark</option>
 
-              <span className="settings-toggle-slider" />
-            </label>
-          </div>
+                <option value="light">Light</option>
 
-          {/* DOCUMENTATION UPDATES */}
+                <option value="system">System</option>
+              </select>
+            </div>
+          </Card>
 
-          <div className="settings-row">
-            <div className="settings-row-icon blue">
-              <FiBell size={18} />
+          {/* NOTIFICATIONS */}
+
+          <Card className="settings-card">
+            <div className="section-header">
+              <div>
+                <h2>Notifications</h2>
+
+                <p>Control which notifications you receive.</p>
+              </div>
             </div>
 
-            <div className="settings-row-content">
-              <strong>Documentation updates</strong>
+            <div className="settings-row">
+              <div className="settings-row-icon yellow">
+                <FiBell size={18} />
+              </div>
 
-              <span>Get notified when documents you follow are updated.</span>
+              <div className="settings-row-content">
+                <strong>Email notifications</strong>
+
+                <span>Receive updates about your documentation by email.</span>
+              </div>
+
+              <label className="settings-toggle">
+                <input
+                  type="checkbox"
+                  checked={settings.emailNotifications}
+                  disabled={isSaving}
+                  onChange={(event) =>
+                    updateSetting('emailNotifications', event.target.checked)
+                  }
+                />
+
+                <span className="settings-toggle-slider" />
+              </label>
             </div>
 
-            <label className="settings-toggle">
-              <input
-                type="checkbox"
-                checked={settings.documentationUpdates}
-                onChange={(event) =>
-                  updateSetting('documentationUpdates', event.target.checked)
-                }
-              />
+            <div className="settings-row">
+              <div className="settings-row-icon blue">
+                <FiBell size={18} />
+              </div>
 
-              <span className="settings-toggle-slider" />
-            </label>
-          </div>
+              <div className="settings-row-content">
+                <strong>Documentation updates</strong>
 
-          {/* MENTIONS */}
+                <span>Get notified when documents you follow are updated.</span>
+              </div>
 
-          <div className="settings-row">
-            <div className="settings-row-icon purple">
-              <FiBell size={18} />
+              <label className="settings-toggle">
+                <input
+                  type="checkbox"
+                  checked={settings.documentationUpdates}
+                  disabled={isSaving}
+                  onChange={(event) =>
+                    updateSetting('documentationUpdates', event.target.checked)
+                  }
+                />
+
+                <span className="settings-toggle-slider" />
+              </label>
             </div>
 
-            <div className="settings-row-content">
-              <strong>Mentions</strong>
+            <div className="settings-row">
+              <div className="settings-row-icon purple">
+                <FiBell size={18} />
+              </div>
 
-              <span>Receive notifications when someone mentions you.</span>
+              <div className="settings-row-content">
+                <strong>Mentions</strong>
+
+                <span>Receive notifications when someone mentions you.</span>
+              </div>
+
+              <label className="settings-toggle">
+                <input
+                  type="checkbox"
+                  checked={settings.mentions}
+                  disabled={isSaving}
+                  onChange={(event) =>
+                    updateSetting('mentions', event.target.checked)
+                  }
+                />
+
+                <span className="settings-toggle-slider" />
+              </label>
             </div>
+          </Card>
 
-            <label className="settings-toggle">
-              <input
-                type="checkbox"
-                checked={settings.mentions}
-                onChange={(event) =>
-                  updateSetting('mentions', event.target.checked)
-                }
-              />
-
-              <span className="settings-toggle-slider" />
-            </label>
-          </div>
-        </Card>
-      </section>
-
-      {/* AI ASSISTANT */}
-
-      <section className="settings-section">
-        <div className="settings-section-header">
-          <div>
-            <h2>AI Assistant</h2>
-
-            <p>Configure how the DevDocs AI assistant works.</p>
-          </div>
-        </div>
-
-        <Card className="settings-card">
           {/* AI ASSISTANT */}
 
-          <div className="settings-row">
-            <div className="settings-row-icon blue">✦</div>
+          <Card className="settings-card">
+            <div className="section-header">
+              <div>
+                <h2>AI Assistant</h2>
 
-            <div className="settings-row-content">
-              <strong>AI Assistant</strong>
-
-              <span>
-                Allow the AI assistant to search and use your documentation.
-              </span>
+                <p>Configure how the DevDocs AI assistant works.</p>
+              </div>
             </div>
 
-            <label className="settings-toggle">
-              <input
-                type="checkbox"
-                checked={settings.aiAssistant}
-                onChange={(event) =>
-                  updateSetting('aiAssistant', event.target.checked)
-                }
-              />
+            <div className="settings-row">
+              <div className="settings-row-icon blue">✦</div>
 
-              <span className="settings-toggle-slider" />
-            </label>
-          </div>
+              <div className="settings-row-content">
+                <strong>AI Assistant</strong>
 
-          {/* CONTEXT AWARE */}
+                <span>
+                  Allow the AI assistant to search and use your documentation.
+                </span>
+              </div>
 
-          <div className="settings-row">
-            <div className="settings-row-icon purple">
-              <FiShield size={18} />
+              <label className="settings-toggle">
+                <input
+                  type="checkbox"
+                  checked={settings.aiAssistant}
+                  disabled={isSaving}
+                  onChange={(event) =>
+                    updateSetting('aiAssistant', event.target.checked)
+                  }
+                />
+
+                <span className="settings-toggle-slider" />
+              </label>
             </div>
 
-            <div className="settings-row-content">
-              <strong>Context-aware responses</strong>
+            <div className="settings-row">
+              <div className="settings-row-icon purple">
+                <FiShield size={18} />
+              </div>
 
-              <span>
-                Use relevant documentation context when generating answers.
-              </span>
+              <div className="settings-row-content">
+                <strong>Context-aware responses</strong>
+
+                <span>
+                  Use relevant documentation context when generating answers.
+                </span>
+              </div>
+
+              <label className="settings-toggle">
+                <input
+                  type="checkbox"
+                  checked={settings.contextAwareResponses}
+                  disabled={!settings.aiAssistant || isSaving}
+                  onChange={(event) =>
+                    updateSetting('contextAwareResponses', event.target.checked)
+                  }
+                />
+
+                <span className="settings-toggle-slider" />
+              </label>
             </div>
-
-            <label className="settings-toggle">
-              <input
-                type="checkbox"
-                checked={settings.contextAwareResponses}
-                disabled={!settings.aiAssistant}
-                onChange={(event) =>
-                  updateSetting('contextAwareResponses', event.target.checked)
-                }
-              />
-
-              <span className="settings-toggle-slider" />
-            </label>
-          </div>
-        </Card>
+          </Card>
+        </div>
       </section>
-
-      {/* ACTIONS */}
-
-      <div className="settings-actions">
-        {showSavedMessage && (
-          <span className="settings-saved-message">
-            <FiCheck size={14} />
-            Changes saved
-          </span>
-        )}
-
-        <Button
-          variant="ghost"
-          disabled={!hasChanges || isSaving}
-          onClick={handleCancelChanges}>
-          Cancel
-        </Button>
-
-        <Button disabled={!hasChanges || isSaving} onClick={handleSaveChanges}>
-          <FiSave size={15} />
-
-          {isSaving ? 'Saving...' : 'Save changes'}
-        </Button>
-      </div>
 
       {/* PROFILE MODAL */}
 
@@ -825,8 +713,6 @@ const Settings = () => {
             </div>
 
             <div className="settings-modal-body">
-              {/* NAME */}
-
               <div className="settings-form-field">
                 <label htmlFor="settings-name">Name</label>
 
@@ -843,8 +729,6 @@ const Settings = () => {
                   }
                 />
               </div>
-
-              {/* EMAIL */}
 
               <div className="settings-form-field">
                 <label htmlFor="settings-email">Email</label>
@@ -863,8 +747,6 @@ const Settings = () => {
                 />
               </div>
 
-              {/* ROLE */}
-
               <div className="settings-form-field">
                 <label htmlFor="settings-role">Role</label>
 
@@ -879,12 +761,6 @@ const Settings = () => {
                       role: event.target.value,
                     }))
                   }>
-                  {/*
-                   * If the current role exists in the
-                   * database but not in ROLE_OPTIONS,
-                   * keep it available in the select.
-                   */}
-
                   {profileDraft.role &&
                     !ROLE_OPTIONS.includes(profileDraft.role) && (
                       <option value={profileDraft.role}>

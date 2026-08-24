@@ -5,19 +5,16 @@ import {
   FiBookOpen,
   FiClock,
   FiFileText,
-  FiFolder,
   FiGrid,
   FiSearch,
   FiTrendingUp,
   FiUsers,
   FiZap,
 } from 'react-icons/fi';
-
 import { Link, useNavigate } from 'react-router-dom';
 
 import Badge from '../../components/ui/Badge';
 import Card from '../../components/ui/Card';
-
 import { getDocuments, type Document } from '../../services/documents';
 
 import './Discover.css';
@@ -29,7 +26,6 @@ const Discover = () => {
 
   const [documents, setDocuments] = useState<Document[]>([]);
   const [activeFilter, setActiveFilter] = useState<DiscoverFilter>('all');
-
   const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -54,12 +50,6 @@ const Discover = () => {
 
     loadDocuments();
   }, []);
-
-  /*
-   * =========================================
-   * FILTER DOCUMENTS
-   * =========================================
-   */
 
   const filteredDocuments = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -115,31 +105,6 @@ const Discover = () => {
     });
   }, [documents, activeFilter, search]);
 
-  /*
-   * =========================================
-   * POPULAR DOCUMENTS
-   * =========================================
-   *
-   * We don't have a views field in the database,
-   * so we use the most recently updated documents
-   * instead of fake view counts.
-   */
-
-  const popularDocuments = useMemo(() => {
-    return [...filteredDocuments]
-      .sort(
-        (a, b) =>
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-      )
-      .slice(0, 3);
-  }, [filteredDocuments]);
-
-  /*
-   * =========================================
-   * RECOMMENDED DOCUMENTS
-   * =========================================
-   */
-
   const recommendedDocuments = useMemo(() => {
     return [...filteredDocuments]
       .sort(
@@ -148,12 +113,6 @@ const Discover = () => {
       )
       .slice(0, 5);
   }, [filteredDocuments]);
-
-  /*
-   * =========================================
-   * FORMAT DATE
-   * =========================================
-   */
 
   const formatUpdatedDate = (date: string) => {
     const updatedAt = new Date(date);
@@ -194,12 +153,6 @@ const Discover = () => {
     });
   };
 
-  /*
-   * =========================================
-   * DESCRIPTION
-   * =========================================
-   */
-
   const getDescription = (document: Document) => {
     const content = document.content.trim();
 
@@ -207,18 +160,12 @@ const Discover = () => {
       return 'No description available for this document.';
     }
 
-    if (content.length <= 150) {
+    if (content.length <= 180) {
       return content;
     }
 
-    return `${content.slice(0, 150)}...`;
+    return `${content.slice(0, 180)}...`;
   };
-
-  /*
-   * =========================================
-   * INITIALS
-   * =========================================
-   */
 
   const getInitials = (name: string) => {
     return name
@@ -230,19 +177,12 @@ const Discover = () => {
       .toUpperCase();
   };
 
-  /*
-   * =========================================
-   * RENDER
-   * =========================================
-   */
-
   return (
     <div className="discover">
       {/* HEADER */}
-
       <section className="discover-header">
         <div>
-          <p className="discover-eyebrow">Explore</p>
+          <p className="discover-eyebrow">Library</p>
 
           <h1>Discover</h1>
 
@@ -251,254 +191,206 @@ const Discover = () => {
             workspace.
           </p>
         </div>
-      </section>
 
-      {/* SEARCH */}
+        <div className="discover-count">
+          <FiBookOpen size={14} />
 
-      <section className="discover-search">
-        <FiSearch size={17} />
-
-        <input
-          type="text"
-          placeholder="Search documentation..."
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-        />
-      </section>
-
-      {/* CATEGORIES */}
-
-      <section className="discover-categories">
-        <button
-          type="button"
-          className={`discover-category ${
-            activeFilter === 'all' ? 'active' : ''
-          }`}
-          onClick={() => setActiveFilter('all')}>
-          <FiGrid size={16} />
-          All
-        </button>
-
-        <button
-          type="button"
-          className={`discover-category ${
-            activeFilter === 'engineering' ? 'active' : ''
-          }`}
-          onClick={() => setActiveFilter('engineering')}>
-          <FiBookOpen size={16} />
-          Engineering
-        </button>
-
-        <button
-          type="button"
-          className={`discover-category ${
-            activeFilter === 'ai' ? 'active' : ''
-          }`}
-          onClick={() => setActiveFilter('ai')}>
-          <FiZap size={16} />
-          AI
-        </button>
-
-        <button
-          type="button"
-          className={`discover-category ${
-            activeFilter === 'team' ? 'active' : ''
-          }`}
-          onClick={() => setActiveFilter('team')}>
-          <FiUsers size={16} />
-          Team
-        </button>
+          <span>
+            {filteredDocuments.length}{' '}
+            {filteredDocuments.length === 1 ? 'document' : 'documents'}
+          </span>
+        </div>
       </section>
 
       {/* ERROR */}
-
       {error && <div className="discover-error">{error}</div>}
 
-      {/* LOADING */}
+      {/* TOOLBAR */}
+      <section className="discover-toolbar">
+        <div className="discover-search">
+          <FiSearch size={16} />
 
+          <input
+            type="text"
+            placeholder="Search documentation..."
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
+        </div>
+
+        <div className="discover-filters">
+          <button
+            type="button"
+            className={activeFilter === 'all' ? 'active' : ''}
+            onClick={() => setActiveFilter('all')}>
+            <FiGrid size={15} />
+            All
+          </button>
+
+          <button
+            type="button"
+            className={activeFilter === 'engineering' ? 'active' : ''}
+            onClick={() => setActiveFilter('engineering')}>
+            <FiBookOpen size={15} />
+            Engineering
+          </button>
+
+          <button
+            type="button"
+            className={activeFilter === 'ai' ? 'active' : ''}
+            onClick={() => setActiveFilter('ai')}>
+            <FiZap size={15} />
+            AI
+          </button>
+
+          <button
+            type="button"
+            className={activeFilter === 'team' ? 'active' : ''}
+            onClick={() => setActiveFilter('team')}>
+            <FiUsers size={15} />
+            Team
+          </button>
+        </div>
+      </section>
+
+      {/* LOADING */}
       {isLoading && (
-        <div className="discover-empty">
+        <section className="discover-empty">
           <FiFileText size={24} />
 
-          <h3>Loading documentation...</h3>
+          <h2>Loading documentation...</h2>
 
           <p>Fetching documents from your workspace.</p>
-        </div>
+        </section>
       )}
 
-      {/* CONTENT */}
+      {/* NO DOCUMENTS */}
+      {!isLoading && !error && documents.length === 0 && (
+        <section className="discover-empty">
+          <FiFileText size={24} />
 
-      {!isLoading && !error && (
-        <>
-          {/* FEATURED */}
+          <h2>No documentation yet</h2>
 
-          <section className="discover-featured">
-            <Card className="discover-featured-card">
-              <div className="featured-icon">
-                <FiTrendingUp size={22} />
-              </div>
+          <p>Create a document to start building your knowledge base.</p>
 
-              <div className="featured-content">
-                <Badge variant="blue">Recently updated</Badge>
+          <button
+            type="button"
+            onClick={() => navigate('/documentation/create')}>
+            <FiFileText size={15} />
+            Create document
+          </button>
+        </section>
+      )}
 
-                <h2>Explore your workspace knowledge</h2>
+      {/* NO RESULTS */}
+      {!isLoading &&
+        !error &&
+        documents.length > 0 &&
+        filteredDocuments.length === 0 && (
+          <section className="discover-empty">
+            <FiSearch size={24} />
 
-                <p>Discover documentation created and updated by your team.</p>
-              </div>
+            <h2>No documentation found</h2>
 
-              <button
-                type="button"
-                className="featured-arrow"
-                onClick={() => navigate('/documentation')}
-                aria-label="Open documentation">
-                <FiArrowRight size={17} />
-              </button>
-            </Card>
+            <p>Try changing your search or category filter.</p>
           </section>
+        )}
 
-          {/* POPULAR */}
-
-          <section className="discover-section">
-            <div className="discover-section-header">
-              <div>
-                <h2>Popular documentation</h2>
-
-                <p>Recently updated documents from your workspace.</p>
+      {/* DOCUMENTS */}
+      {!isLoading && !error && filteredDocuments.length > 0 && (
+        <section className="discover-list">
+          {filteredDocuments.map((document) => (
+            <Card className="discover-card" key={document.id}>
+              <div className="discover-icon">
+                <FiFileText size={19} />
               </div>
 
-              <Link to="/documentation">
-                View all
-                <FiArrowRight size={14} />
+              <Link
+                to={`/documentation/${document.id}`}
+                className="discover-content">
+                <div className="discover-title-row">
+                  <h2>{document.title}</h2>
+
+                  {document.category && (
+                    <Badge variant="gray">{document.category}</Badge>
+                  )}
+                </div>
+
+                <p>{getDescription(document)}</p>
+
+                <div className="discover-meta">
+                  <span>
+                    <FiUsers size={11} />
+
+                    <span>{getInitials(document.author.name)}</span>
+
+                    {document.author.name}
+                  </span>
+
+                  <span>
+                    <FiClock size={12} />
+
+                    {formatUpdatedDate(document.updatedAt)}
+                  </span>
+                </div>
               </Link>
+
+              <Link
+                to={`/documentation/${document.id}`}
+                className="discover-open"
+                title="Open document">
+                <FiArrowRight size={16} />
+              </Link>
+            </Card>
+          ))}
+        </section>
+      )}
+
+      {/* RECOMMENDED */}
+      {!isLoading && !error && recommendedDocuments.length > 0 && (
+        <section className="discover-recommended">
+          <div className="discover-section-header">
+            <div>
+              <p className="discover-eyebrow">Explore</p>
+
+              <h2>Recommended for you</h2>
+
+              <p>Documentation you may find useful.</p>
             </div>
 
-            {popularDocuments.length === 0 ? (
-              <div className="discover-empty">
-                <FiFileText size={24} />
+            <FiTrendingUp size={18} />
+          </div>
 
-                <h3>No documentation found</h3>
+          <div className="discover-recommended-list">
+            {recommendedDocuments.map((document) => (
+              <Link
+                to={`/documentation/${document.id}`}
+                key={document.id}
+                className="discover-recommended-link">
+                <Card className="discover-recommended-card">
+                  <div>
+                    <h3>{document.title}</h3>
 
-                <p>Create a document to start building your knowledge base.</p>
+                    {document.category && (
+                      <Badge variant="blue">{document.category}</Badge>
+                    )}
 
-                <button
-                  type="button"
-                  onClick={() => navigate('/documentation/create')}>
-                  <FiFileText size={15} />
-                  Create document
-                </button>
-              </div>
-            ) : (
-              <div className="discover-document-grid">
-                {popularDocuments.map((document) => (
-                  <Link
-                    to={`/documentation/${document.id}`}
-                    key={document.id}
-                    className="discover-document-link">
-                    <Card className="discover-document">
-                      <div className="discover-document-icon">
-                        <FiFileText size={18} />
-                      </div>
+                    <p>{getDescription(document)}</p>
+                  </div>
 
-                      {document.category && (
-                        <Badge variant="gray">{document.category}</Badge>
-                      )}
+                  <div className="discover-recommended-meta">
+                    <span>
+                      <FiClock size={11} />
+                      {formatUpdatedDate(document.updatedAt)}
+                    </span>
 
-                      <h3>{document.title}</h3>
-
-                      <p>{getDescription(document)}</p>
-
-                      <div className="discover-document-meta">
-                        <span>
-                          <FiUsers size={11} />
-
-                          <span>{getInitials(document.author.name)}</span>
-
-                          {document.author.name}
-                        </span>
-
-                        <span>
-                          <FiClock size={11} />
-
-                          {formatUpdatedDate(document.updatedAt)}
-                        </span>
-                      </div>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </section>
-
-          {/* RECOMMENDED */}
-
-          <section className="discover-section">
-            <div className="discover-section-header">
-              <div>
-                <h2>Recommended for you</h2>
-
-                <p>Documentation you may find useful.</p>
-              </div>
-            </div>
-
-            {recommendedDocuments.length === 0 ? (
-              <div className="discover-empty">
-                <FiFolder size={24} />
-
-                <h3>Nothing to recommend yet</h3>
-
-                <p>
-                  Your recommendations will appear when documentation is
-                  available.
-                </p>
-              </div>
-            ) : (
-              <div className="discover-recommended-list">
-                {recommendedDocuments.map((document) => (
-                  <Link
-                    to={`/documentation/${document.id}`}
-                    key={document.id}
-                    className="discover-recommended-link">
-                    <Card className="discover-recommended">
-                      <div className="recommended-icon">
-                        <FiFolder size={18} />
-                      </div>
-
-                      <div className="recommended-content">
-                        <div className="recommended-title-row">
-                          <h3>{document.title}</h3>
-
-                          {document.category && (
-                            <Badge variant="blue">{document.category}</Badge>
-                          )}
-                        </div>
-
-                        <p>{getDescription(document)}</p>
-
-                        <div className="recommended-meta">
-                          <span>
-                            <FiClock size={11} />
-
-                            {formatUpdatedDate(document.updatedAt)}
-                          </span>
-
-                          <span>
-                            <FiUsers size={11} />
-
-                            {document.author.name}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="recommended-arrow">
-                        <FiArrowRight size={15} />
-                      </div>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </section>
-        </>
+                    <FiArrowRight size={15} />
+                  </div>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </section>
       )}
     </div>
   );

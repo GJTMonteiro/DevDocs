@@ -1,14 +1,13 @@
 .collections {
   width: 100%;
-  max-width: 1400px;
+  max-width: 1500px;
   margin: 0 auto;
-  padding: 32px;
   color: var(--text);
 }
 
-/* =========================
-   Header
-========================= */
+/* =========================================
+   HEADER
+========================================= */
 
 .collections-header {
   display: flex;
@@ -19,108 +18,104 @@
 }
 
 .collections-eyebrow {
-  margin: 0 0 8px;
+  margin: 0 0 7px;
   color: var(--accent);
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.12em;
   text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .collections-header h1 {
   margin: 0;
   color: var(--text-h);
-  font-size: 2rem;
+  font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.03em;
 }
 
 .collections-description {
-  margin: 8px 0 0;
-  max-width: 620px;
+  margin: 7px 0 0;
+  max-width: 650px;
   color: var(--text);
-  font-size: 0.95rem;
+  font-size: 13px;
   line-height: 1.6;
 }
 
-/* =========================
-   Buttons
-========================= */
+.collections-count {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  font-size: 11px;
+}
 
-.collections-create {
-  display: inline-flex;
+.collections-count svg {
+  color: var(--accent);
+}
+
+/* =========================================
+   ERROR
+========================================= */
+
+.collections-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 14px 16px;
+  border: 1px solid var(--danger-border);
+  border-radius: 10px;
+  background: var(--danger-bg);
+  color: var(--danger);
+  font-size: 0.9rem;
+}
+
+.collections-error button {
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-
-  min-height: 42px;
-  padding: 0 16px;
-
-  border: 1px solid var(--accent);
-  border-radius: 9px;
-
-  background: var(--accent);
-  color: #ffffff;
-
-  font-size: 0.875rem;
-  font-weight: 600;
-
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
   cursor: pointer;
-
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
-.collections-create:hover {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
-  box-shadow: var(--shadow-sm);
+.collections-error button:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.collections-create:active {
-  transform: translateY(1px);
-}
-
-/* =========================
-   Toolbar
-========================= */
+/* =========================================
+   TOOLBAR
+========================================= */
 
 .collections-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-
-  margin-bottom: 20px;
-  padding-bottom: 18px;
-
-  border-bottom: 1px solid var(--border);
-}
-
-.collections-toolbar > span {
-  color: var(--text-muted);
-  font-size: 0.8rem;
-  white-space: nowrap;
+  margin-bottom: 24px;
 }
 
 .collections-search {
   display: flex;
   align-items: center;
   gap: 10px;
-
   width: min(420px, 100%);
   height: 42px;
   padding: 0 13px;
-
   border: 1px solid var(--border);
   border-radius: 9px;
-
   background: var(--surface);
   color: var(--text-muted);
-
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease,
@@ -134,165 +129,120 @@
 
 .collections-search input {
   width: 100%;
-
-  border: 0;
-  outline: 0;
-
+  min-width: 0;
+  border: none;
+  outline: none;
   background: transparent;
   color: var(--text-h);
-
-  font-family: inherit;
-  font-size: 0.875rem;
+  font: inherit;
+  font-size: 12px;
 }
 
 .collections-search input::placeholder {
   color: var(--text-muted);
 }
 
-/* =========================
-   Error
-========================= */
+/* =========================================
+   STATES
+========================================= */
 
-.collections-error {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-
-  margin-bottom: 20px;
-  padding: 12px 14px;
-
-  border: 1px solid var(--danger-border);
-  border-radius: 9px;
-
-  background: var(--danger-bg);
-  color: var(--danger);
-
-  font-size: 0.875rem;
-}
-
-.collections-error button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 30px;
-  height: 30px;
-  padding: 0;
-
-  border: 0;
-  border-radius: 6px;
-
-  background: transparent;
-  color: var(--danger);
-
-  cursor: pointer;
-
-  transition: background-color 0.2s ease;
-}
-
-.collections-error button:hover {
-  background: var(--danger-bg);
-}
-
-/* =========================
-   States
-========================= */
-
-.collections-state {
-  min-height: 360px;
-
+.collections-empty {
+  min-height: 260px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
-  padding: 40px;
-
+  gap: 10px;
+  padding: 40px 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
   text-align: center;
 }
 
-.collections-state h2 {
-  margin: 18px 0 8px;
+.collections-empty > svg {
+  color: var(--text-muted);
+}
 
+.collections-empty h2 {
+  margin: 2px 0 0;
   color: var(--text-h);
-
-  font-size: 1.1rem;
+  font-size: 15px;
   font-weight: 600;
 }
 
-.collections-state p {
+.collections-empty p {
   max-width: 420px;
-  margin: 0 0 20px;
-
+  margin: 0;
   color: var(--text-muted);
-
-  font-size: 0.875rem;
+  font-size: 11px;
   line-height: 1.6;
 }
 
-.collections-spinner {
-  width: 30px;
-  height: 30px;
-
-  border: 3px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-
-  animation: collections-spin 0.8s linear infinite;
-}
-
-@keyframes collections-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.collections-empty-icon {
-  display: flex;
+.collections-create {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-
-  width: 58px;
-  height: 58px;
-
-  border: 1px solid var(--border);
-  border-radius: 14px;
-
-  background: var(--surface);
-  color: var(--text-muted);
+  gap: 7px;
+  min-height: 38px;
+  margin-top: 6px;
+  padding: 0 14px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--accent);
+  color: #ffffff;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-/* =========================
-   Grid
-========================= */
-
-.collections-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+.collections-create:hover {
+  border-color: var(--accent-hover);
+  background: var(--accent-hover);
+  box-shadow: var(--shadow-sm);
 }
 
-/* =========================
-   Collection Card
-========================= */
+.collections-create:active {
+  transform: translateY(1px);
+}
 
-.collection-card {
-  position: relative;
+/* =========================================
+   COLLECTION LIST
+========================================= */
 
+.collections-list {
   display: flex;
   flex-direction: column;
 
-  min-height: 230px;
-  padding: 20px;
+  /*
+   * Espaçamento entre os cards.
+   * Este é o ponto principal para evitar
+   * que os cards fiquem colados.
+   */
+  gap: 16px;
+}
 
+/* =========================================
+   COLLECTION CARD
+========================================= */
+
+.collection-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  padding: 18px 20px;
   border: 1px solid var(--border);
-  border-radius: 14px;
-
+  border-radius: 10px;
   background: var(--surface);
-
   overflow: visible;
-
   transition:
     border-color 0.2s ease,
     background-color 0.2s ease,
@@ -303,81 +253,135 @@
 .collection-card:hover {
   border-color: var(--border-hover);
   background: var(--surface-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
-.collection-card-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
+/* =========================================
+   COLLECTION ICON
+========================================= */
 
 .collection-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  width: 42px;
-  height: 42px;
-
-  border-radius: 10px;
+  border-radius: 9px;
 }
 
-/* =========================
-   Collection Colors
-========================= */
-
-.collection-icon.blue,
-.collections-color-option.blue {
+.collection-icon.blue {
   background: var(--accent-bg);
   color: var(--accent);
 }
 
-.collection-icon.purple,
-.collections-color-option.purple {
+.collection-icon.purple {
   background: var(--purple-bg);
   color: var(--purple);
 }
 
-.collection-icon.green,
-.collections-color-option.green {
+.collection-icon.green {
   background: var(--success-bg);
   color: var(--success);
 }
 
-.collection-icon.yellow,
-.collections-color-option.yellow {
+.collection-icon.yellow {
   background: var(--warning-bg);
   color: var(--warning);
 }
 
-/* =========================
-   Card Actions
-========================= */
+/* =========================================
+   COLLECTION CONTENT
+========================================= */
+
+.collection-content {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.collection-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.collection-title-row h2 {
+  overflow: hidden;
+  margin: 0;
+  color: var(--text-h);
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.collection-content > p {
+  overflow: hidden;
+  margin: 5px 0 0;
+  color: var(--text);
+  font-size: 11px;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* =========================================
+   COLLECTION META
+========================================= */
+
+.collection-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.collection-meta span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.collection-meta svg {
+  flex-shrink: 0;
+}
+
+/* =========================================
+   COLLECTION ACTIONS
+========================================= */
 
 .collection-actions {
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
+
+/* =========================================
+   MORE BUTTON
+========================================= */
 
 .collection-more {
   display: flex;
   align-items: center;
   justify-content: center;
-
   width: 32px;
   height: 32px;
   padding: 0;
-
   border: 1px solid transparent;
   border-radius: 7px;
-
   background: transparent;
   color: var(--text-muted);
-
   cursor: pointer;
-
   transition:
     background-color 0.2s ease,
     color 0.2s ease,
@@ -386,55 +390,48 @@
 
 .collection-more:hover {
   border-color: var(--border-hover);
-  background: var(--surface-hover);
+  background: var(--surface-secondary);
   color: var(--text-h);
 }
 
+/* =========================================
+   CONTEXT MENU
+========================================= */
+
 .collection-menu {
   position: absolute;
-  top: 38px;
+  top: calc(100% + 6px);
   right: 0;
-  z-index: 20;
-
+  z-index: 50;
   min-width: 140px;
-  padding: 6px;
-
+  padding: 5px;
   border: 1px solid var(--border-hover);
-  border-radius: 9px;
-
+  border-radius: 8px;
   background: var(--surface);
-
   box-shadow: var(--shadow-lg);
 }
 
 .collection-menu button {
   display: flex;
   align-items: center;
-  gap: 9px;
-
+  gap: 8px;
   width: 100%;
   padding: 9px 10px;
-
-  border: 0;
+  border: none;
   border-radius: 6px;
-
   background: transparent;
   color: var(--text);
-
-  font-family: inherit;
-  font-size: 0.8rem;
-
+  font: inherit;
+  font-size: 11px;
   text-align: left;
-
   cursor: pointer;
-
   transition:
     background-color 0.2s ease,
     color 0.2s ease;
 }
 
 .collection-menu button:hover {
-  background: var(--surface-hover);
+  background: var(--surface-secondary);
   color: var(--text-h);
 }
 
@@ -447,95 +444,23 @@
   color: var(--danger);
 }
 
-/* =========================
-   Card Content
-========================= */
-
-.collection-content {
-  flex: 1;
-  margin-top: 20px;
-}
-
-.collection-content h2 {
-  margin: 0 0 8px;
-
-  color: var(--text-h);
-
-  font-size: 1.05rem;
-  font-weight: 650;
-  letter-spacing: -0.015em;
-}
-
-.collection-content p {
-  display: -webkit-box;
-
-  margin: 0;
-
-  color: var(--text);
-
-  font-size: 0.83rem;
-  line-height: 1.6;
-
-  overflow: hidden;
-
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-}
-
-/* =========================
-   Card Footer
-========================= */
-
-.collection-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-
-  margin-top: 22px;
-  padding-top: 15px;
-
-  border-top: 1px solid var(--border);
-}
-
-.collection-meta {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-
-  min-width: 0;
-
-  color: var(--text-muted);
-  font-size: 0.72rem;
-}
-
-.collection-meta span {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-
-  white-space: nowrap;
-}
+/* =========================================
+   OPEN BUTTON
+========================================= */
 
 .collection-open {
   display: flex;
   align-items: center;
   justify-content: center;
-
   width: 31px;
   height: 31px;
-
   flex-shrink: 0;
-
-  border: 1px solid var(--border-hover);
+  padding: 0;
+  border: 1px solid var(--border);
   border-radius: 7px;
-
   background: transparent;
-  color: var(--text);
-
+  color: var(--text-muted);
   cursor: pointer;
-
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease,
@@ -550,98 +475,75 @@
   transform: translateX(2px);
 }
 
-/* =========================
-   Info Card
-========================= */
+/* =========================================
+   INFORMATION CARD
+========================================= */
 
 .collections-info {
-  margin-top: 22px;
+  margin-top: 20px;
 }
 
 .collections-info-card {
   display: flex;
   align-items: center;
-  gap: 16px;
-
-  padding: 20px;
-
+  gap: 14px;
+  padding: 18px 20px;
   border: 1px solid var(--border);
-  border-radius: 14px;
-
+  border-radius: 10px;
   background: var(--surface);
 }
 
 .collections-info-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  width: 40px;
-  height: 40px;
-
-  flex-shrink: 0;
-
   border-radius: 9px;
-
   background: var(--info-bg);
   color: var(--info);
 }
 
 .collections-info-card h3 {
   margin: 0 0 5px;
-
   color: var(--text-h);
-
-  font-size: 0.9rem;
+  font-size: 12px;
   font-weight: 600;
 }
 
 .collections-info-card p {
   margin: 0;
-
   color: var(--text-muted);
-
-  font-size: 0.8rem;
-  line-height: 1.5;
+  font-size: 10px;
+  line-height: 1.6;
 }
 
-/* =========================
-   Modal
-========================= */
+/* =========================================
+   MODAL OVERLAY
+========================================= */
 
 .collections-modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1000;
-
+  z-index: 2000;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  padding: 24px;
-
-  background: rgba(15, 23, 42, 0.55);
-
-  backdrop-filter: blur(5px);
-}
-
-:root[data-theme='dark'] .collections-modal-overlay {
-  background: rgba(0, 0, 0, 0.65);
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
 }
 
 .collections-modal {
-  width: min(520px, 100%);
-  max-height: calc(100vh - 48px);
-
-  overflow-y: auto;
-
+  width: 100%;
+  max-width: 500px;
+  max-height: calc(100vh - 40px);
+  overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: 16px;
-
+  border-radius: 12px;
   background: var(--surface);
-
   box-shadow: var(--shadow-lg);
-
   animation: collections-modal-in 0.2s ease;
 }
 
@@ -657,55 +559,51 @@
   }
 }
 
+/* =========================================
+   MODAL HEADER
+========================================= */
+
 .collections-modal-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 20px;
-
-  padding: 24px;
-
+  gap: 16px;
+  padding: 20px;
   border-bottom: 1px solid var(--border);
+}
+
+.collections-modal-header .collections-eyebrow {
+  margin-bottom: 5px;
 }
 
 .collections-modal-header h2 {
   margin: 0;
-
   color: var(--text-h);
-
-  font-size: 1.25rem;
-  font-weight: 650;
+  font-size: 17px;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
 .collections-modal-close {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  width: 34px;
-  height: 34px;
-
-  flex-shrink: 0;
   padding: 0;
-
-  border: 1px solid var(--border-hover);
-  border-radius: 8px;
-
+  border: none;
+  border-radius: 7px;
   background: transparent;
-  color: var(--text);
-
+  color: var(--text-muted);
   cursor: pointer;
-
   transition:
     background-color 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease;
+    color 0.2s ease;
 }
 
 .collections-modal-close:hover:not(:disabled) {
-  border-color: var(--border-hover);
-  background: var(--surface-hover);
+  background: var(--surface-secondary);
   color: var(--text-h);
 }
 
@@ -714,29 +612,27 @@
   opacity: 0.5;
 }
 
-/* =========================
-   Form
-========================= */
+/* =========================================
+   FORM
+========================================= */
 
 .collections-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-
-  padding: 24px;
+  gap: 18px;
+  padding: 20px;
 }
 
 .collections-form label {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
 }
 
 .collections-form label > span,
 .collections-color-field > span {
   color: var(--text-h);
-
-  font-size: 0.8rem;
+  font-size: 11px;
   font-weight: 600;
 }
 
@@ -744,33 +640,26 @@
 .collections-form textarea {
   width: 100%;
   box-sizing: border-box;
-
-  border: 1px solid var(--border-hover);
-  border-radius: 9px;
-
+  border: 1px solid var(--border);
+  border-radius: 7px;
   outline: none;
-
-  background: var(--surface);
+  background: var(--surface-secondary);
   color: var(--text-h);
-
   font-family: inherit;
-  font-size: 0.875rem;
-
+  font-size: 11px;
   transition:
     border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background-color 0.2s ease;
+    box-shadow 0.2s ease;
 }
 
 .collections-form input {
-  height: 44px;
-  padding: 0 13px;
+  height: 38px;
+  padding: 0 10px;
 }
 
 .collections-form textarea {
   min-height: 100px;
-  padding: 12px 13px;
-
+  padding: 10px;
   resize: vertical;
 }
 
@@ -785,36 +674,38 @@
   box-shadow: 0 0 0 3px var(--accent-bg);
 }
 
-/* =========================
-   Color Picker
-========================= */
+.collections-form input:disabled,
+.collections-form textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* =========================================
+   COLOR PICKER
+========================================= */
 
 .collections-color-field {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 9px;
 }
 
 .collections-color-options {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
 }
 
 .collections-color-option {
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  width: 42px;
-  height: 42px;
   padding: 0;
-
   border: 1px solid transparent;
-  border-radius: 9px;
-
+  border-radius: 8px;
   cursor: pointer;
-
   transition:
     border-color 0.2s ease,
     transform 0.2s ease,
@@ -830,34 +721,53 @@
   box-shadow: 0 0 0 2px var(--surface);
 }
 
-/* =========================
-   Form Actions
-========================= */
+/* =========================================
+   COLOR VARIANTS
+========================================= */
+
+.collections-color-option.blue {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.collections-color-option.purple {
+  background: var(--purple-bg);
+  color: var(--purple);
+}
+
+.collections-color-option.green {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.collections-color-option.yellow {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+/* =========================================
+   FORM ACTIONS
+========================================= */
 
 .collections-form-actions {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 10px;
-
-  margin-top: 4px;
-  padding-top: 20px;
-
+  margin-top: 2px;
+  padding-top: 16px;
   border-top: 1px solid var(--border);
 }
 
 .collections-cancel,
 .collections-save {
-  min-height: 40px;
-  padding: 0 15px;
-
-  border-radius: 8px;
-
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 7px;
   font-family: inherit;
-  font-size: 0.8rem;
+  font-size: 11px;
   font-weight: 600;
-
   cursor: pointer;
-
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease,
@@ -866,21 +776,19 @@
 }
 
 .collections-cancel {
-  border: 1px solid var(--border-hover);
-
+  border: 1px solid var(--border);
   background: transparent;
   color: var(--text);
 }
 
 .collections-cancel:hover:not(:disabled) {
   border-color: var(--border-hover);
-  background: var(--surface-hover);
+  background: var(--surface-secondary);
   color: var(--text-h);
 }
 
 .collections-save {
   border: 1px solid var(--accent);
-
   background: var(--accent);
   color: #ffffff;
 }
@@ -896,28 +804,29 @@
   opacity: 0.5;
 }
 
-/* =========================
-   Responsive
-========================= */
+/* =========================================
+   RESPONSIVE
+========================================= */
 
 @media (max-width: 1100px) {
-  .collections-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .collections {
+    max-width: 100%;
+  }
+
+  .collection-card {
+    padding: 17px 18px;
   }
 }
 
 @media (max-width: 760px) {
-  .collections {
-    padding: 24px 18px;
-  }
-
   .collections-header {
     align-items: flex-start;
     flex-direction: column;
+    gap: 16px;
   }
 
-  .collections-create {
-    width: 100%;
+  .collections-count {
+    align-self: flex-start;
   }
 
   .collections-toolbar {
@@ -929,12 +838,16 @@
     width: 100%;
   }
 
-  .collections-toolbar > span {
-    align-self: flex-end;
+  .collection-card {
+    align-items: flex-start;
   }
 
-  .collections-grid {
-    grid-template-columns: 1fr;
+  .collection-actions {
+    margin-left: auto;
+  }
+
+  .collection-content > p {
+    white-space: normal;
   }
 
   .collections-info-card {
@@ -942,28 +855,45 @@
   }
 }
 
-@media (max-width: 520px) {
-  .collections {
-    padding: 20px 14px;
-  }
-
+@media (max-width: 600px) {
   .collections-header h1 {
-    font-size: 1.65rem;
+    font-size: 23px;
   }
 
   .collection-card {
-    min-height: 210px;
-    padding: 17px;
+    padding: 15px;
+  }
+
+  .collection-icon {
+    width: 38px;
+    height: 38px;
   }
 
   .collection-meta {
-    flex-direction: column;
     align-items: flex-start;
+    flex-direction: column;
     gap: 5px;
   }
 
+  .collection-actions {
+    gap: 4px;
+  }
+
+  .collection-more,
+  .collection-open {
+    width: 30px;
+    height: 30px;
+  }
+
   .collections-modal-overlay {
-    padding: 12px;
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .collections-modal {
+    max-width: none;
+    max-height: 90vh;
+    border-radius: 12px 12px 0 0;
   }
 
   .collections-modal-header,
@@ -978,5 +908,31 @@
   .collections-cancel,
   .collections-save {
     width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .collections-header {
+    margin-bottom: 22px;
+  }
+
+  .collection-card {
+    gap: 10px;
+  }
+
+  .collection-content > p {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+
+  .collection-meta {
+    font-size: 9px;
+  }
+
+  .collections-info-card {
+    padding: 15px;
   }
 }

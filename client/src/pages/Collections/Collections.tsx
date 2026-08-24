@@ -45,11 +45,13 @@ const EMPTY_FORM: CollectionForm = {
 
 const Collections = () => {
   const [collections, setCollections] = useState<Collection[]>([]);
+
   const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [editingCollection, setEditingCollection] = useState<Collection | null>(
     null,
   );
@@ -57,6 +59,7 @@ const Collections = () => {
   const [form, setForm] = useState<CollectionForm>(EMPTY_FORM);
 
   const [isSaving, setIsSaving] = useState(false);
+
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
 
   const loadCollections = async () => {
@@ -170,6 +173,7 @@ const Collections = () => {
       setError(null);
 
       await deleteCollection(collection.id);
+
       await loadCollections();
     } catch (error) {
       console.error(error);
@@ -191,6 +195,7 @@ const Collections = () => {
 
   return (
     <div className="collections">
+      {/* HEADER */}
       <section className="collections-header">
         <div>
           <p className="collections-eyebrow">Library</p>
@@ -202,12 +207,31 @@ const Collections = () => {
           </p>
         </div>
 
-        <button className="collections-create" onClick={openCreateModal}>
-          <FiPlus size={16} />
-          New collection
-        </button>
+        <div className="collections-count">
+          <FiFolder size={14} />
+
+          <span>
+            {collections.length}{' '}
+            {collections.length === 1 ? 'collection' : 'collections'}
+          </span>
+        </div>
       </section>
 
+      {/* ERROR */}
+      {error && (
+        <div className="collections-error">
+          <span>{error}</span>
+
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            aria-label="Dismiss error">
+            <FiX size={16} />
+          </button>
+        </div>
+      )}
+
+      {/* TOOLBAR */}
       <section className="collections-toolbar">
         <div className="collections-search">
           <FiSearch size={16} />
@@ -219,34 +243,23 @@ const Collections = () => {
             placeholder="Search collections..."
           />
         </div>
-
-        <span>
-          {collections.length}{' '}
-          {collections.length === 1 ? 'collection' : 'collections'}
-        </span>
       </section>
 
-      {error && (
-        <div className="collections-error">
-          <span>{error}</span>
+      {/* LOADING */}
+      {isLoading && (
+        <section className="collections-empty">
+          <FiFolder size={24} />
 
-          <button onClick={() => setError(null)} aria-label="Dismiss error">
-            <FiX size={16} />
-          </button>
-        </div>
+          <h2>Loading collections...</h2>
+
+          <p>Fetching your collections.</p>
+        </section>
       )}
 
-      {isLoading ? (
-        <section className="collections-state">
-          <div className="collections-spinner" />
-
-          <p>Loading collections...</p>
-        </section>
-      ) : collections.length === 0 ? (
-        <section className="collections-state">
-          <div className="collections-empty-icon">
-            <FiFolder size={24} />
-          </div>
+      {/* EMPTY */}
+      {!isLoading && !error && collections.length === 0 && (
+        <section className="collections-empty">
+          <FiFolder size={24} />
 
           <h2>{search ? 'No collections found' : 'No collections yet'}</h2>
 
@@ -257,58 +270,35 @@ const Collections = () => {
           </p>
 
           {!search && (
-            <button className="collections-create" onClick={openCreateModal}>
+            <button
+              type="button"
+              className="collections-create"
+              onClick={openCreateModal}>
               <FiPlus size={16} />
               New collection
             </button>
           )}
         </section>
-      ) : (
-        <section className="collections-grid">
+      )}
+
+      {/* COLLECTIONS */}
+      {!isLoading && !error && collections.length > 0 && (
+        <section className="collections-list">
           {collections.map((collection) => (
             <Card className="collection-card" key={collection.id}>
-              <div className="collection-card-header">
-                <div className={`collection-icon ${collection.color}`}>
-                  <FiFolder size={19} />
-                </div>
-
-                <div className="collection-actions">
-                  <button
-                    className="collection-more"
-                    onClick={() =>
-                      setOpenMenuId(
-                        openMenuId === collection.id ? null : collection.id,
-                      )
-                    }
-                    aria-label="Collection actions">
-                    <FiMoreHorizontal size={17} />
-                  </button>
-
-                  {openMenuId === collection.id && (
-                    <div className="collection-menu">
-                      <button onClick={() => openEditModal(collection)}>
-                        <FiEdit2 size={14} />
-                        Edit
-                      </button>
-
-                      <button
-                        className="danger"
-                        onClick={() => handleDelete(collection)}>
-                        <FiTrash2 size={14} />
-                        Delete
-                      </button>
-                    </div>
-                  )}
-                </div>
+              {/* ICON */}
+              <div className={`collection-icon ${collection.color}`}>
+                <FiFolder size={19} />
               </div>
 
+              {/* CONTENT */}
               <div className="collection-content">
-                <h2>{collection.name}</h2>
+                <div className="collection-title-row">
+                  <h2>{collection.name}</h2>
+                </div>
 
                 <p>{collection.description || 'No description provided.'}</p>
-              </div>
 
-              <div className="collection-footer">
                 <div className="collection-meta">
                   <span>
                     <FiFileText size={12} />
@@ -322,11 +312,46 @@ const Collections = () => {
                     {formatUpdatedAt(collection.updatedAt)}
                   </span>
                 </div>
+              </div>
+
+              {/* ACTIONS */}
+              <div className="collection-actions">
+                <button
+                  type="button"
+                  className="collection-more"
+                  onClick={() =>
+                    setOpenMenuId(
+                      openMenuId === collection.id ? null : collection.id,
+                    )
+                  }
+                  aria-label="Collection actions">
+                  <FiMoreHorizontal size={17} />
+                </button>
+
+                {openMenuId === collection.id && (
+                  <div className="collection-menu">
+                    <button
+                      type="button"
+                      onClick={() => openEditModal(collection)}>
+                      <FiEdit2 size={14} />
+                      Edit
+                    </button>
+
+                    <button
+                      type="button"
+                      className="danger"
+                      onClick={() => handleDelete(collection)}>
+                      <FiTrash2 size={14} />
+                      Delete
+                    </button>
+                  </div>
+                )}
 
                 <button
+                  type="button"
                   className="collection-open"
                   aria-label={`Open ${collection.name}`}>
-                  <FiArrowRight size={15} />
+                  <FiArrowRight size={16} />
                 </button>
               </div>
             </Card>
@@ -334,6 +359,7 @@ const Collections = () => {
         </section>
       )}
 
+      {/* INFORMATION */}
       <section className="collections-info">
         <Card className="collections-info-card">
           <div className="collections-info-icon">
@@ -351,6 +377,7 @@ const Collections = () => {
         </Card>
       </section>
 
+      {/* MODAL */}
       {isModalOpen && (
         <div className="collections-modal-overlay" onMouseDown={closeModal}>
           <div
@@ -366,6 +393,7 @@ const Collections = () => {
               </div>
 
               <button
+                type="button"
                 className="collections-modal-close"
                 onClick={closeModal}
                 disabled={isSaving}>
