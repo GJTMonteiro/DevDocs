@@ -1,1 +1,1 @@
-export const API_URL = 'https://devdocs-vkhe.onrender.com';
+export const API_URL = 'https://devdocs-vkhe.onrender.com/api';
