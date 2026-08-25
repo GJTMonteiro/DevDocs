@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/api';
+import { API_URL } from '../api';
 
 export interface AIChatSource {
   id: string;
@@ -20,8 +20,10 @@ interface AIChatErrorResponse {
   error: string;
 }
 
-export const askAI = async (message: string): Promise<AIChatResponse> => {
-  const response = await fetch(`${API_URL}/ai/chat`, {
+export const askAI = async (
+  message: string,
+): Promise<AIChatResponse> => {
+  const response = await fetch(`${API_URL}/api/ai/chat`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
