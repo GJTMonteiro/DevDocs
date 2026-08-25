@@ -39,7 +39,7 @@ interface UnreadCountResponse {
 export const getNotifications = async (): Promise<Notification[]> => {
   const userId = '00ad7e9c-46c4-4657-aaf3-2749c7d9549d';
 
-  const response = await fetch(`${API_URL}/notifications?userId=${userId}`);
+  const response = await fetch(`${API_URL}/api/notifications?userId=${userId}`);
 
   if (!response.ok) {
     const error = await response.json().catch(() => null);
@@ -60,7 +60,7 @@ export const getUnreadNotifications = async (): Promise<Notification[]> => {
   const userId = '00ad7e9c-46c4-4657-aaf3-2749c7d9549d';
 
   const response = await fetch(
-    `${API_URL}/notifications/unread?userId=${userId}`,
+    `${API_URL}/api/notifications/unread?userId=${userId}`,
   );
 
   if (!response.ok) {
@@ -82,7 +82,7 @@ export const getUnreadNotificationCount = async (): Promise<number> => {
   const userId = '00ad7e9c-46c4-4657-aaf3-2749c7d9549d';
 
   const response = await fetch(
-    `${API_URL}/notifications/unread/count?userId=${userId}`,
+    `${API_URL}/api/notifications/unread/count?userId=${userId}`,
   );
 
   if (!response.ok) {
@@ -108,7 +108,7 @@ export const markNotificationAsRead = async (
   const userId = '00ad7e9c-46c4-4657-aaf3-2749c7d9549d';
 
   const response = await fetch(
-    `${API_URL}/notifications/${notificationId}/read`,
+    `${API_URL}/api/notifications/${notificationId}/read`,
     {
       method: 'PATCH',
       headers: {
@@ -138,7 +138,7 @@ export const markNotificationAsRead = async (
 export const markAllNotificationsAsRead = async (): Promise<void> => {
   const userId = '00ad7e9c-46c4-4657-aaf3-2749c7d9549d';
 
-  const response = await fetch(`${API_URL}/notifications/read-all`, {
+  const response = await fetch(`${API_URL}/api/notifications/read-all`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -164,7 +164,7 @@ export const deleteNotification = async (
 ): Promise<void> => {
   const userId = '00ad7e9c-46c4-4657-aaf3-2749c7d9549d';
 
-  const response = await fetch(`${API_URL}/notifications/${notificationId}`, {
+  const response = await fetch(`${API_URL}/api/notifications/${notificationId}`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
@@ -188,7 +188,7 @@ export const deleteNotification = async (
 export const deleteAllNotifications = async (): Promise<void> => {
   const userId = '00ad7e9c-46c4-4657-aaf3-2749c7d9549d';
 
-  const response = await fetch(`${API_URL}/notifications?userId=${userId}`, {
+  const response = await fetch(`${API_URL}/api/notifications?userId=${userId}`, {
     method: 'DELETE',
   });
 
