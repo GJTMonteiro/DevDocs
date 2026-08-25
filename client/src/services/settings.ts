@@ -20,7 +20,7 @@ interface SettingsResponse {
 }
 
 export const getSettings = async (): Promise<UserSettings> => {
-  const response = await fetch(`${API_URL}/settings`);
+  const response = await fetch(`${API_URL}/api/settings`);
 
   if (!response.ok) {
     throw new Error('Failed to fetch settings.');
@@ -38,7 +38,7 @@ export const getSettings = async (): Promise<UserSettings> => {
 export const updateSettings = async (
   settings: Partial<UserSettings>,
 ): Promise<UserSettings> => {
-  const response = await fetch(`${API_URL}/settings`, {
+  const response = await fetch(`${API_URL}/api/settings`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

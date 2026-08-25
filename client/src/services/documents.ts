@@ -80,7 +80,7 @@ interface DeleteAllDocumentsResponse {
 export const createDocument = async (
   input: CreateDocumentInput,
 ): Promise<Document> => {
-  const response = await fetch(`${API_URL}/documents`, {
+  const response = await fetch(`${API_URL}/api/documents`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -90,7 +90,6 @@ export const createDocument = async (
 
   if (!response.ok) {
     const error = await response.json().catch(() => null);
-
     throw new Error(error?.error || 'Failed to create document.');
   }
 
@@ -102,11 +101,10 @@ export const createDocument = async (
 export const getDocuments = async (): Promise<Document[]> => {
   const userId = '00ad7e9c-46c4-4657-aaf3-2749c7d9549d';
 
-  const response = await fetch(`${API_URL}/documents?userId=${userId}`);
+  const response = await fetch(`${API_URL}/api/documents?userId=${userId}`);
 
   if (!response.ok) {
     const error = await response.json().catch(() => null);
-
     throw new Error(error?.error || 'Failed to fetch documents.');
   }
 
@@ -121,12 +119,11 @@ export const getDocumentById = async (
   const userId = '00ad7e9c-46c4-4657-aaf3-2749c7d9549d';
 
   const response = await fetch(
-    `${API_URL}/documents/${documentId}?userId=${userId}`,
+    `${API_URL}/api/documents/${documentId}?userId=${userId}`,
   );
 
   if (!response.ok) {
     const error = await response.json().catch(() => null);
-
     throw new Error(error?.error || 'Failed to fetch document.');
   }
 
@@ -136,11 +133,10 @@ export const getDocumentById = async (
 };
 
 export const getDocumentStats = async (): Promise<DocumentStats> => {
-  const response = await fetch(`${API_URL}/documents/stats`);
+  const response = await fetch(`${API_URL}/api/documents/stats`);
 
   if (!response.ok) {
     const error = await response.json().catch(() => null);
-
     throw new Error(error?.error || 'Failed to fetch document statistics.');
   }
 
@@ -154,19 +150,21 @@ export const toggleDocumentFavorite = async (
 ): Promise<boolean> => {
   const userId = '00ad7e9c-46c4-4657-aaf3-2749c7d9549d';
 
-  const response = await fetch(`${API_URL}/documents/${documentId}/favorite`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
+  const response = await fetch(
+    `${API_URL}/api/documents/${documentId}/favorite`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId,
+      }),
     },
-    body: JSON.stringify({
-      userId,
-    }),
-  });
+  );
 
   if (!response.ok) {
     const error = await response.json().catch(() => null);
-
     throw new Error(error?.error || 'Failed to update favorite.');
   }
 
@@ -179,7 +177,7 @@ export const updateDocument = async (
   documentId: string,
   input: UpdateDocumentInput,
 ): Promise<Document> => {
-  const response = await fetch(`${API_URL}/documents/${documentId}`, {
+  const response = await fetch(`${API_URL}/api/documents/${documentId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -189,7 +187,6 @@ export const updateDocument = async (
 
   if (!response.ok) {
     const error = await response.json().catch(() => null);
-
     throw new Error(error?.error || 'Failed to update document.');
   }
 
@@ -199,13 +196,12 @@ export const updateDocument = async (
 };
 
 export const deleteDocument = async (documentId: string): Promise<void> => {
-  const response = await fetch(`${API_URL}/documents/${documentId}`, {
+  const response = await fetch(`${API_URL}/api/documents/${documentId}`, {
     method: 'DELETE',
   });
 
   if (!response.ok) {
     const error = await response.json().catch(() => null);
-
     throw new Error(error?.error || 'Failed to delete document.');
   }
 };
@@ -215,13 +211,12 @@ export const deleteDocument = async (documentId: string): Promise<void> => {
 ========================================= */
 
 export const deleteAllDocuments = async (): Promise<number> => {
-  const response = await fetch(`${API_URL}/documents`, {
+  const response = await fetch(`${API_URL}/api/documents`, {
     method: 'DELETE',
   });
 
   if (!response.ok) {
     const error = await response.json().catch(() => null);
-
     throw new Error(error?.error || 'Failed to delete all documents.');
   }
 

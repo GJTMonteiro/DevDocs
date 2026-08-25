@@ -33,7 +33,7 @@ export const getCollections = async (
   const query = params.toString();
 
   const response = await fetch(
-    `${API_URL}/collections${query ? `?${query}` : ''}`,
+    `${API_URL}/api/collections${query ? `?${query}` : ''}`,
   );
 
   if (!response.ok) {
@@ -55,7 +55,7 @@ export interface CreateCollectionInput {
 export const createCollection = async (
   input: CreateCollectionInput,
 ): Promise<Collection> => {
-  const response = await fetch(`${API_URL}/collections`, {
+  const response = await fetch(`${API_URL}/api/collections`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -84,7 +84,7 @@ export const updateCollection = async (
   id: number,
   input: UpdateCollectionInput,
 ): Promise<Collection> => {
-  const response = await fetch(`${API_URL}/collections/${id}`, {
+  const response = await fetch(`${API_URL}/api/collections/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -104,7 +104,7 @@ export const updateCollection = async (
 };
 
 export const deleteCollection = async (id: number): Promise<void> => {
-  const response = await fetch(`${API_URL}/collections/${id}`, {
+  const response = await fetch(`${API_URL}/api/collections/${id}`, {
     method: 'DELETE',
   });
 
@@ -116,7 +116,7 @@ export const deleteCollection = async (id: number): Promise<void> => {
 };
 
 export const getCollectionById = async (id: number): Promise<Collection> => {
-  const response = await fetch(`${API_URL}/collections/${id}`);
+  const response = await fetch(`${API_URL}/api/collections/${id}`);
 
   if (!response.ok) {
     const result = await response.json().catch(() => null);

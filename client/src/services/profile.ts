@@ -16,7 +16,7 @@ interface ProfileResponse {
 }
 
 export const getProfile = async (): Promise<UserProfile> => {
-  const response = await fetch(`${API_URL}/profile`);
+  const response = await fetch(`${API_URL}/api/profile`);
 
   if (!response.ok) {
     throw new Error(`Profile request failed with status ${response.status}`);
@@ -36,7 +36,7 @@ export const updateProfile = async (
   email: string,
   role: string,
 ): Promise<UserProfile> => {
-  const response = await fetch(`${API_URL}/profile`, {
+  const response = await fetch(`${API_URL}/api/profile`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
